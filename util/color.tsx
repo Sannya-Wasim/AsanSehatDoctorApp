@@ -1,0 +1,7 @@
+export const RED_COLOR= "#BC1817"
+export const WHITE="#fff"
+export const BLACK="black"
+export const BLUE="#3E65A0"
+export const BLUE_20="rgba(62, 101, 160, 0.2)"
+export const WHITE_40="rgba(255, 0, 0, 0.6)"
+export const WHITE_10="rgba(0, 0, 0, 0.1)"

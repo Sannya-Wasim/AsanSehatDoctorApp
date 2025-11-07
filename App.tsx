@@ -1,45 +1,71 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import React, { useEffect, useState } from 'react';
+import { LayoutAnimation, Platform, Text, TextInput } from 'react-native'
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { store, persistor } from './store';
+import SplashScreenNavigator from './navigations/splash';
+import { NavigationContainer } from '@react-navigation/native';
+import { useAppSelector } from './store/hook';
+import AuthScreenNavigator from './navigations/authNavigation';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { BLACK } from './util/color';
+import DrawerNavigation from './navigations/drawerNavigation';
+
+interface TextWithDefaultProps extends Text {
+  defaultProps?: { allowFontScaling?: boolean, color?: string };
+}
+interface TextInputWithDefaultProps extends TextInput {
+  defaultProps?: { allowFontScaling?: boolean, color?: string };
+}
+
+
+
+
+
+const AppUI = () => {
+  const [splashShown, setSplashShow] = useState(true)
+  const auth = useAppSelector(state => state.auth)
+  useEffect(() => {
+    ((Text as unknown) as TextWithDefaultProps).defaultProps = ((Text as unknown) as TextWithDefaultProps).defaultProps || {};
+    ((Text as unknown) as TextWithDefaultProps).defaultProps!.allowFontScaling = false;
+    ((Text as unknown) as TextWithDefaultProps).defaultProps!.color = BLACK;
+    ((TextInput as unknown) as TextInputWithDefaultProps).defaultProps = ((TextInput as unknown) as TextInputWithDefaultProps).defaultProps || {};
+    ((TextInput as unknown) as TextInputWithDefaultProps).defaultProps!.allowFontScaling = false;
+    ((TextInput as unknown) as TextInputWithDefaultProps).defaultProps!.color = BLACK
+    setTimeout(() => {
+      console.log("timeout runs")
+      LayoutAnimation.easeInEaseOut()
+      setSplashShow(false)
+    }, 4000)
+    // return (
+    //   clearTimeout(timeout)
+    // )
+  }, [])
+  console.log("splash Screen", splashShown)
+  return (
+    <NavigationContainer>
+      {
+        splashShown ? <SplashScreenNavigator /> :
+          !auth.isSingin ?
+            <AuthScreenNavigator /> : <DrawerNavigation />
+      }
+    </NavigationContainer>
+  )
+}
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+    <SafeAreaProvider style={{marginTop:Platform.OS === 'ios' ?50:0}}>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <AppUI />
+        </PersistGate>
+      </Provider>
     </SafeAreaProvider>
   );
 }
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
 
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default App;
