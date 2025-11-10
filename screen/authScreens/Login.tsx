@@ -12,6 +12,7 @@ import { useAppDispatch } from '../../store/hook';
 import { setSigin } from '../../store/reducer/authReducer';
 import { config } from '../../config';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 type Props = NativeStackScreenProps<AuthStackType, 'Login'>;
 
 
@@ -20,21 +21,25 @@ const LoginScreen = ({ navigation }: Props) => {
     const password = usePasswordInputState("")
     const dispatch = useAppDispatch()
     const login = async () => {
-        console.log("email", email)
-        console.log("password", password)
         try {
             const formData = new FormData()
             formData.append('email', email?.value)
             formData?.append('password', password?.value)
-            console.log("login request obj", formData)
+            const token = AsyncStorage?.getItem('token')
+            // console.log("login request obj", formData)
             const res = await axios.post(`${config?.baseUrl}/login/login`, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
-                    "Authorization": `Bearer ${config?.token}`
+                    "Authorization": `Bearer ${token}`
                 }
             })
             if (res?.data?.status) {
                 console.log("Logged in successfully", res?.data)
+                // await AsyncStorage?.setItem('isLogin', 'true')
+                dispatch(setSigin(true))
+
+            } else {
+                console.log("Login failed", res?.data?.message)
             }
         } catch (error) {
             console.log("Error loggging in", error)
@@ -57,7 +62,6 @@ const LoginScreen = ({ navigation }: Props) => {
                     <Pressable style={styles.forgotButton}><Text style={styles.forgotButtonText}>Forgot Password?</Text></Pressable>
                 </View>
                 <Pressable style={GlobalStyle.filedButton}
-                    // onPress={()=>dispatch(setSigin(true))}
                     onPress={() => login()}
                 >
                     <Text style={GlobalStyle.filedButtonText}>Log In</Text>

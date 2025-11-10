@@ -12,12 +12,17 @@ import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-naviga
 import { useAppDispatch } from '../../store/hook';
 import * as ImagePicker from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/Feather';
+import { config } from '../../config';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Props = NativeStackScreenProps<AuthStackType, 'Signup'>;
 
 const SignupScreen = ({ navigation }: Props) => {
     const name = useInputState("")
+    const contact = useInputState("")
     const email = useInputState('')
+    const gender = useInputState("")
     const age = useInputState('')
     const experince = useInputState('')
     const fee = useInputState('')
@@ -59,11 +64,54 @@ const SignupScreen = ({ navigation }: Props) => {
         { name: "09:00-12:00", isSelected: false }
     ])
 
+    const signup = async () => {
+        try {
+            const formData = new FormData()
+            formData?.append('name', name?.value)
+            formData?.append('number', contact?.value)
+            console.log("signup request obj", formData)
+            const signupRes = await axios.post(`${config?.baseUrl}/signup`, formData, {
+                headers: {
+                    "Content-Type": 'multipart/form-data',
+                }
+            })
+            if (signupRes?.data?.status) {
+                console.log("signup successfull", signupRes?.data)
+                AsyncStorage?.setItem("userId", signupRes?.data?.data?.userId)
+                AsyncStorage?.setItem('token', signupRes?.data?.token)
+            } else {
+                console.log("Signup failed", signupRes?.data?.message)
+            }
+
+            // Update profile
+            // if (signupRes?.data?.status && signupRes?.data?.data) {
+            //     const profileFormData = new FormData()
+            //     profileFormData.append('id', signupRes?.data?.data?.userId)
+            //     profileFormData.append('name', name?.value)
+            //     profileFormData.append('contact', contact?.value)
+            //     profileFormData.append('email', email?.value)
+            //     profileFormData.append('gender', gender?.value)
+            //     profileFormData.append('cnic', cnic?.value)
+            //     profileFormData.append('dob', dob?.value ?? '1977-01-15')
+            //     profileFormData.append('about', about?.value ?? '')
+            //     profileFormData.append('pmdcNumber', pmdc?.value)
+            //     const profileUpdateRes = await axios?.post(`${config?.baseUrl}/doctors/profileUpdate`, profileFormData, {
+            //         headers: {
+            //             "Content-Type": "multipart/form-data",
+            //             "Authorization": `Bearer ${signupRes?.data?.token}`
+            //         }
+            //     })
+            // }
+        } catch (error) {
+            console.log("Error signing up", error)
+        }
+    }
+
 
     return (
         <SafeAreaView style={styles.mainContainer}>
             <View style={styles.skipButtonContainer}>
-                <Pressable style={styles.skipButton} onPress={()=>navigation.goBack()}><Icon name="arrow-left" size={20} color={BLACK}/></Pressable>
+                <Pressable style={styles.skipButton} onPress={() => navigation.goBack()}><Icon name="arrow-left" size={20} color={BLACK} /></Pressable>
             </View>
             <View style={styles.container}>
 
@@ -75,7 +123,9 @@ const SignupScreen = ({ navigation }: Props) => {
 
                         <Text style={{ fontSize: scale(16), color: BLACK }}>Personal Information</Text>
                         <Input inputState={name} label={null} placeholder='Enter Your Name' />
-                        <Input inputState={email} label={null} placeholder='Enter Your Email' />
+                        <Text style={{ fontSize: scale(12), color: BLACK }}>Number</Text>
+                        <Input inputState={contact} label={null} placeholder='Enter Your Email' />
+                        {/* <Input inputState={email} label={null} placeholder='Enter Your Email' /> */}
                         <View style={{ flexDirection: "row", alignItems: "center" }}>
                             <TextInput style={styles.input} {...age} keyboardType='number-pad' placeholder='Age' />
                             <TextInput style={styles.input} {...experince} keyboardType='number-pad' placeholder='Experience' />
@@ -126,7 +176,7 @@ const SignupScreen = ({ navigation }: Props) => {
                             <Text style={GlobalStyle.outlinedButtonText}>Upload Picture</Text>
                         </Pressable>
                     </View>
-                    <Pressable style={GlobalStyle.filedButton}>
+                    <Pressable style={GlobalStyle.filedButton} onPress={() => signup()}>
                         <Text style={GlobalStyle.filedButtonText}>Register</Text>
                     </Pressable>
                     <View style={{ height: scale(300) }} />
