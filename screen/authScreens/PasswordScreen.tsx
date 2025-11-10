@@ -44,7 +44,7 @@ const PasswordScreen = ({ navigation }: Props) => {
         />
 
         <Text style={styles.mainText}>Set Password</Text>
-        <Text style={styles.text}>Set a password for your account</Text>
+        <Text style={styles.text}>Almost there. Please set a password for your account to continue.</Text>
         <PasswordInput
           inputState={password}
           label={'Password'}
@@ -60,9 +60,13 @@ const PasswordScreen = ({ navigation }: Props) => {
           style={[GlobalStyle.filedButton, { marginTop: scale(40) }]}
           onPress={() => dispatch(setAuthSkiped(true))}
         >
-          <Text style={GlobalStyle.filedButtonText}>Create Account</Text>
+          <Text style={GlobalStyle.filedButtonText}>Create New Password</Text>
         </Pressable>
       </View>
+            <View style={styles.footer}>
+              <Text style={{ fontSize: scale(11) }}>Supported by Hands Pakistan</Text>
+              <Text style={{ fontSize: scale(11) }}>Copyright Asaan Sehat. All Rights Reserved.</Text>
+            </View>
     </SafeAreaView>
   );
 };
@@ -73,6 +77,7 @@ const styles = ScaledSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: '#fff',
+    justifyContent : "space-between"
   },
   container: {
     width: '90%',
@@ -80,6 +85,12 @@ const styles = ScaledSheet.create({
     alignContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
+    flexGrow : 1
+  },
+  footer: {
+    alignSelf: 'center',
+    alignItems: 'center',
+    marginBottom: scale(80), // some breathing room above the safe area bottom
   },
   skipButtonContainer: {
     flexDirection: 'row',
@@ -110,7 +121,9 @@ const styles = ScaledSheet.create({
     fontSize: '12@s',
     fontWeight: '300',
     color: 'black',
-    marginVertical: '5@s',
+    // marginVertical: '5@s',
+    marginHorizontal : "50@s",
+    marginBottom : "30@s",
     textAlign: 'center',
   },
   forgotContainer: {
