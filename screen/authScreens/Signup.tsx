@@ -65,6 +65,8 @@ const SignupScreen = ({ navigation }: Props) => {
     }
   };
 
+  const press = () => navigation?.navigate('OTPScreen')
+
   return (
     <SafeAreaView style={styles.mainContainer}>
       <KeyboardAvoidingView
@@ -131,7 +133,7 @@ const SignupScreen = ({ navigation }: Props) => {
                 placeholder="Enter Your Email"
               />
             </View>
-            <Pressable style={GlobalStyle.filedButton} onPress={() => signup()}>
+            <Pressable style={GlobalStyle.filedButton} onPress={() => press()}>
               <Text style={GlobalStyle.filedButtonText}>Register</Text>
             </Pressable>
           </ScrollView>
