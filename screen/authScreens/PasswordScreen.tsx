@@ -6,11 +6,14 @@ import {
   Dimensions,
   Pressable,
   TextInput,
+  ToastAndroid,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScaledSheet, scale } from 'react-native-size-matters';
 import { BLACK, BLUE, RED_COLOR, WHITE } from '../../util/color';
-import PhoneInput from 'react-native-phone-number-input';
+// import PhoneInput from 'react-native-phone-number-input';
 import { useInputState, Input } from '../../components/inputs/textInput';
 import {
   usePasswordInputState,
@@ -23,17 +26,50 @@ import {
 } from '@react-navigation/native-stack';
 import { AuthStackType } from '../../navigations/authNavigation';
 import { useAppDispatch } from '../../store/hook';
-import { setAuthSkiped } from '../../store/reducer/authReducer';
+import axios from 'axios';
+import { config } from '../../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 type Props = NativeStackScreenProps<AuthStackType, 'PasswordScreen'>;
 
 const PasswordScreen = ({ navigation }: Props) => {
   const password = usePasswordInputState('');
   const confirmPassword = usePasswordInputState('');
   const dispatch = useAppDispatch();
+  const setPassword = async () => {
+    try {
+      if (password?.value === confirmPassword?.value) {
+        const formData = new FormData();
+        const userId = await AsyncStorage.getItem('userId');
+        const token = await AsyncStorage.getItem('token');
+        formData?.append('userId', userId ?? 3785);
+        formData?.append('password', password?.value);
+        const res = await axios.post(
+          `${config?.baseUrl}/login/setPassword`,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              'Authorization': `${token ?? config?.token}`,
+            },
+          },
+        );
+        if (res?.data?.status){
+            console.log("Password updated successfully", res?.data)
+        } else {
+            console.log("Password updation failed", res?.data?.message)
+        }
+      } else {
+        ToastAndroid.show("Passwords don't match", ToastAndroid.SHORT);
+      }
+    } catch (error:any) {
+        console.log("Error updating password", error?.message)
+    }
+  };
 
   return (
     <SafeAreaView style={styles.mainContainer}>
-      <View style={styles.skipButtonContainer}>
+<KeyboardAvoidingView behavior={Platform?.OS === 'ios' ? 'padding' : 'height'} style={{flex : 1, justifyContent : "center"}}>
+          <View style={styles.skipButtonContainer}>
         {/* <Pressable style={styles.skipButton}><Text style={styles.skipButtonText}>SKIP</Text></Pressable> */}
       </View>
       <View style={styles.container}>
@@ -44,7 +80,9 @@ const PasswordScreen = ({ navigation }: Props) => {
         />
 
         <Text style={styles.mainText}>Set Password</Text>
-        <Text style={styles.text}>Almost there. Please set a password for your account to continue.</Text>
+        <Text style={styles.text}>
+          Almost there. Please set a password for your account to continue.
+        </Text>
         <PasswordInput
           inputState={password}
           label={'Password'}
@@ -58,15 +96,18 @@ const PasswordScreen = ({ navigation }: Props) => {
 
         <Pressable
           style={[GlobalStyle.filedButton, { marginTop: scale(40) }]}
-          onPress={() => dispatch(setAuthSkiped(true))}
+          onPress={() => setPassword()}
         >
           <Text style={GlobalStyle.filedButtonText}>Create New Password</Text>
         </Pressable>
       </View>
-            <View style={styles.footer}>
-              <Text style={{ fontSize: scale(11) }}>Supported by Hands Pakistan</Text>
-              <Text style={{ fontSize: scale(11) }}>Copyright Asaan Sehat. All Rights Reserved.</Text>
-            </View>
+      <View style={styles.footer}>
+        <Text style={{ fontSize: scale(11) }}>Supported by Hands Pakistan</Text>
+        <Text style={{ fontSize: scale(11) }}>
+          Copyright Asaan Sehat. All Rights Reserved.
+        </Text>
+      </View>
+</KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -77,7 +118,7 @@ const styles = ScaledSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: '#fff',
-    justifyContent : "space-between"
+    justifyContent: 'space-between',
   },
   container: {
     width: '90%',
@@ -85,7 +126,7 @@ const styles = ScaledSheet.create({
     alignContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
-    flexGrow : 1
+    flexGrow: 1,
   },
   footer: {
     alignSelf: 'center',
@@ -122,8 +163,8 @@ const styles = ScaledSheet.create({
     fontWeight: '300',
     color: 'black',
     // marginVertical: '5@s',
-    marginHorizontal : "50@s",
-    marginBottom : "30@s",
+    marginHorizontal: '50@s',
+    marginBottom: '30@s',
     textAlign: 'center',
   },
   forgotContainer: {
