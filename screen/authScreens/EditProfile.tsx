@@ -38,6 +38,7 @@ import { DrawerScreenProps } from '@react-navigation/drawer';
 import { DrawerParamList } from '../../navigations/drawerNavigation';
 import { AllHeader } from '../../components/header';
 import FAIcon from 'react-native-vector-icons/FontAwesome';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Props = DrawerScreenProps<DrawerParamList, 'EditProfile'>;
 
@@ -99,6 +100,23 @@ const EditProfile = ({ navigation }: Props) => {
     { name: '06:00-09:00', isSelected: false },
     { name: '09:00-12:00', isSelected: false },
   ]);
+
+
+  const editProfile = async () => {
+    const userId = await AsyncStorage?.getItem('userId')
+    console.log("userId", userId ??  3785)
+    console.log("name", name?.value);
+    console.log("email", email?.value);
+    console.log('age', age?.value)
+    console.log("experience", experince?.value);
+    console.log("fee", fee?.value);
+    console.log("about", about?.value);
+    console.log("specialties", specialties?.value);
+    console.log("degrees", degrees);
+    // console.log("days", days);
+    // console.log("time", time);
+    
+  }
 
   return (
     <SafeAreaView style={styles.mainContainer}>
@@ -318,7 +336,7 @@ const EditProfile = ({ navigation }: Props) => {
                     paddingVertical: scale(3),
                   }}
                   onPress={() =>
-                    setDays(prev =>
+                    setTime(prev =>
                       prev.map((item, i) =>
                         i === index
                           ? { ...item, isSelected: !item.isSelected }
@@ -345,7 +363,8 @@ const EditProfile = ({ navigation }: Props) => {
               GlobalStyle.filedButton,
               { position: 'absolute', bottom: scale(20) },
             ]}
-            onPress={() => navigation.navigate('UploadPicture')}
+            // onPress={() => navigation.navigate('UploadPicture')}
+            onPress={editProfile}
           >
             <Text style={GlobalStyle.filedButtonText}>Submit</Text>
           </Pressable>
