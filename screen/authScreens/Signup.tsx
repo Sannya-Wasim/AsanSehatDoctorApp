@@ -55,8 +55,6 @@ const SignupScreen = ({ navigation }: Props) => {
       );
       if (signupRes?.data?.status) {
         console.log('signup successfull', signupRes?.data);
-        AsyncStorage?.setItem('userId', signupRes?.data?.data?.userId);
-        AsyncStorage?.setItem('token', signupRes?.data?.token);
       } else {
         console.log('Signup failed', signupRes?.data?.message);
       }

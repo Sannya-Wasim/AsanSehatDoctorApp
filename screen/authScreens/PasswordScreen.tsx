@@ -30,7 +30,6 @@ import { useAppDispatch } from '../../store/hook';
 import axios from 'axios';
 import { config } from '../../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { setSigin } from '../../store/reducer/authReducer';
 type Props = NativeStackScreenProps<AuthStackType, 'PasswordScreen'>;
 
 const PasswordScreen = ({ navigation }: Props) => {
@@ -41,7 +40,11 @@ const PasswordScreen = ({ navigation }: Props) => {
   const setPassword = async () => {
     setLoading(true);
     try {
-      if (password?.value === confirmPassword?.value) {
+        // if (password?.value === '' && confirmPassword?.value === ''){
+        //     ToastAndroid.show('Passwords should not be empty', ToastAndroid?.BOTTOM)
+        // }
+      // else 
+        if  (password?.value === confirmPassword?.value) {
         const formData = new FormData();
         const userId = await AsyncStorage.getItem('userId');
         const token = await AsyncStorage.getItem('token');
@@ -53,13 +56,13 @@ const PasswordScreen = ({ navigation }: Props) => {
           {
             headers: {
               'Content-Type': 'multipart/form-data',
-              Authorization: `${token ?? config?.token}`,
+              'Authorization': `${token ?? config?.token}`,
             },
           },
         );
         if (res?.data?.status) {
           console.log('Password updated successfully', res?.data);
-          dispatch(setSigin(true));
+          navigation?.navigate('EditProfile')
         } else {
           console.log('Password updation failed', res?.data?.message);
         }

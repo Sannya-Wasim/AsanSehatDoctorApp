@@ -19,7 +19,7 @@ import RescheduleAppointment from "../screen/Home/RescheduleAppointment";
 import JoinAppointment from "../screen/Home/JoinAppointment";
 import Appointments from "../screen/Home/Appointments";
 import Profile from "../screen/Home/Profile";
-import EditProfile from "../screen/Home/EditProfile";
+import EditProfile from "../screen/authScreens/EditProfile";
 
 
 export type DrawerParamList = {
@@ -146,7 +146,7 @@ export default function DrawerNavigation() {
             <Drawer.Screen name='RescheduleAppointment' component={RescheduleAppointment} />
             <Drawer.Screen name='Appointments' component={Appointments} />
             <Drawer.Screen name='Profile' component={Profile} />
-            <Drawer.Screen name='EditProfile' component={EditProfile} />
+            {/* <Drawer.Screen name='EditProfile' component={EditProfile} /> */}
         </Drawer.Navigator>
     );
 }
