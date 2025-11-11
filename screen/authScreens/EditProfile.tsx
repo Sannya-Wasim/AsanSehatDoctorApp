@@ -25,64 +25,46 @@ import {
   PasswordInput,
 } from '../../components/inputs/passwordInput';
 import GlobalStyle from '../../util/styles';
-import { AuthStackType } from '../../navigations/authNavigation';
-import { NavigationContainerProps } from '@react-navigation/native';
-import {
-  NativeStackNavigationProp,
-  NativeStackScreenProps,
-} from '@react-navigation/native-stack';
-import { useAppDispatch } from '../../store/hook';
 import * as ImagePicker from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/Feather';
 import { DrawerScreenProps } from '@react-navigation/drawer';
 import { DrawerParamList } from '../../navigations/drawerNavigation';
-import { AllHeader } from '../../components/header';
 import FAIcon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
 
 type Props = DrawerScreenProps<DrawerParamList, 'EditProfile'>;
 
-const EditProfile = ({ navigation }: Props) => {
-  const name = useInputState('');
-  const email = useInputState('');
-  const age = useInputState('');
-  const experince = useInputState('');
-  const fee = useInputState('');
-  const about = useInputState('');
-  const specialties = useInputState('');
-  const [response, setResponse] = useState<any>(null);
-  // on Button Press add degress and certificates
-  const [degrees, setDegrees] = useState<{ degree: string; image: any }[]>([
-    { degree: '', image: null },
-  ]);
+type FormValues = {
+  name: string;
+  email: string;
+  age: string;
+  experience: string;
+  fee: string;
+  about: string;
+  specialties: string;
+  degrees: { degree: string; image: any }[];
+};
 
-  const onButtonPressDegree = useCallback(
-    (
-      type: String,
-      options: ImagePicker.CameraOptions | ImagePicker.ImageLibraryOptions,
-      index: number,
-    ) => {
-      if (type === 'capture') {
-        ImagePicker.launchCamera(options, data =>
-          setDegrees(prev =>
-            prev.map((item, i) =>
-              i === index ? { ...item, image: data } : item,
-            ),
-          ),
-        );
-      } else {
-        ImagePicker.launchCamera(options, data =>
-          setDegrees(prev =>
-            prev.map((item, i) =>
-              i === index ? { ...item, image: data } : item,
-            ),
-          ),
-        );
-      }
+const EditProfile = ({ navigation }: any) => {
+  const { control, handleSubmit, setValue } = useForm<FormValues>({
+    defaultValues: {
+      name: '',
+      email: '',
+      age: '',
+      experience: '',
+      fee: '',
+      about: '',
+      specialties: '',
+      degrees: [{ degree: '', image: null }],
     },
-    [],
-  );
-  // array of days with is selected or not selected useStates {name,isSelected}
+  });
+
+  const { fields, append, remove, update } = useFieldArray({
+    control,
+    name: 'degrees',
+  });
+
   const [days, setDays] = useState([
     { name: 'Mon', isSelected: false },
     { name: 'Tue', isSelected: false },
@@ -92,7 +74,7 @@ const EditProfile = ({ navigation }: Props) => {
     { name: 'Sat', isSelected: false },
     { name: 'Sun', isSelected: false },
   ]);
-  // array of time with is selected or not selected useStates {name,isSelected} 3 hr slots 09:00-12:00, 12:00-03:00, 03:00-06:00
+
   const [time, setTime] = useState([
     { name: '09:00-12:00', isSelected: false },
     { name: '12:00-03:00', isSelected: false },
@@ -101,28 +83,54 @@ const EditProfile = ({ navigation }: Props) => {
     { name: '09:00-12:00', isSelected: false },
   ]);
 
+  const onButtonPressDegree = useCallback(
+    (
+      type: string,
+      options: ImagePicker.CameraOptions | ImagePicker.ImageLibraryOptions,
+      index: number,
+    ) => {
+      const callback = (data: any) => {
+        update(index, {
+          ...fields[index],
+          image: {
+            uri: data?.assets[0]?.uri,
+            name: data?.assets[0]?.fileName,
+            type: data?.assets[0]?.type,
+          },
+        });
+      };
 
-  const editProfile = async () => {
-    const userId = await AsyncStorage?.getItem('userId')
-    console.log("userId", userId ??  3785)
-    console.log("name", name?.value);
-    console.log("email", email?.value);
-    console.log('age', age?.value)
-    console.log("experience", experince?.value);
-    console.log("fee", fee?.value);
-    console.log("about", about?.value);
-    console.log("specialties", specialties?.value);
-    console.log("degrees", degrees);
-    // console.log("days", days);
-    // console.log("time", time);
-    
-  }
+      if (type === 'capture') {
+        ImagePicker.launchCamera(options, callback);
+      } else {
+        ImagePicker.launchImageLibrary(options, callback);
+      }
+    },
+    [fields, update],
+  );
+
+  const editProfile = async (data: FormValues) => {
+    const userId = await AsyncStorage.getItem('userId');
+    console.log('userId', userId ?? 3785);
+    console.log('Form Data', data);
+    // console.log(
+    //   'Days selected',
+    //   days.filter(d => d.isSelected),
+    // );
+    // console.log(
+    //   'Time selected',
+    //   time.filter(t => t.isSelected),
+    // );
+  };
 
   return (
     <SafeAreaView style={styles.mainContainer}>
-      <StatusBar translucent backgroundColor={WHITE} barStyle={'dark-content'}/>
-      {/* <AllHeader navigate={() => navigation.navigate('Help')} back={() => navigation.goBack()} title={'Edit Profile'} /> */}
-      <View style={styles?.header}>
+      <StatusBar
+        translucent
+        backgroundColor={WHITE}
+        barStyle={'dark-content'}
+      />
+      <View style={styles.header}>
         <Text
           style={{ color: RED_COLOR, fontSize: scale(20), fontWeight: 'bold' }}
         >
@@ -136,235 +144,274 @@ const EditProfile = ({ navigation }: Props) => {
         <ScrollView
           style={{ width: '100%', alignSelf: 'center', marginTop: scale(5) }}
         >
-          <View>
-            <Text style={{ fontSize: scale(16), color: BLACK }}>
-              Personal Information
-            </Text>
-            <Input inputState={name} label={null} placeholder="Full Name" />
-            <Input
-              inputState={email}
-              label={null}
-              placeholder="Email address"
-            />
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <TextInput
-                style={styles.input}
-                {...age}
-                keyboardType="number-pad"
-                placeholder="Age"
-                placeholderTextColor={GRAY}
+          <Text style={{ fontSize: scale(16), color: BLACK }}>
+            Personal Information
+          </Text>
+
+          {/* Name */}
+          <Controller
+            control={control}
+            name="name"
+            render={({ field: { value, onChange } }) => (
+              <Input
+                inputState={{ value, onChangeText: onChange }}
+                placeholder="Full Name"
+                label={null}
               />
-              <TextInput
-                style={styles.input}
-                {...experince}
-                keyboardType="number-pad"
-                placeholder="Experience"
-                placeholderTextColor={GRAY}
+            )}
+          />
+
+          {/* Email */}
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { value, onChange } }) => (
+              <Input
+                inputState={{ value, onChangeText: onChange }}
+                placeholder="Email address"
+                keyboardType="email-address"
+                label={null}
               />
-              <TextInput
-                style={styles.input}
-                {...fee}
-                keyboardType="number-pad"
-                placeholder="Fee"
-                placeholderTextColor={GRAY}
-              />
-            </View>
-            <Input
-              multiline={true}
-              numberOfLines={5}
-              inputState={about}
-              label={null}
-              placeholder="About"
-              inputStyle={{ height: scale(100) }}
-              textAlignVertical="top"
-            />
-            <Input
-              inputState={specialties}
-              label={null}
-              placeholder="Specialties"
-            />
-            {degrees.map((item, index) => (
-              <View
-                key={index}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginVertical: scale(5),
-                }}
-              >
-                {degrees.length > 1 && (
-                  <Pressable
-                    style={{
-                      backgroundColor: RED_COLOR,
-                      padding: scale(5),
-                      borderRadius: scale(5),
-                    }}
-                    onPress={() =>
-                      setDegrees(prev => prev.filter((item, i) => i !== index))
+            )}
+          />
+
+          {/* Age, Experience, Fee */}
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {(
+              ['age', 'experience', 'fee'] as (keyof Pick<
+                FormValues,
+                'age' | 'experience' | 'fee'
+              >)[]
+            ).map((nameField, i) => (
+              <Controller
+                key={i}
+                control={control}
+                name={nameField}
+                render={({ field: { onChange, value } }) => (
+                  <TextInput
+                    style={styles.input}
+                    value={value}
+                    onChangeText={onChange}
+                    placeholder={
+                      nameField.charAt(0).toUpperCase() + nameField.slice(1)
                     }
-                  >
-                    <Icon name="trash" size={20} color={WHITE} />
-                  </Pressable>
+                    placeholderTextColor={GRAY}
+                    keyboardType="number-pad"
+                  />
                 )}
-                <TextInput
-                  style={[styles.input]}
-                  placeholder="Degrees"
-                  placeholderTextColor={GRAY}
-                  value={item.degree}
-                  onChangeText={text =>
-                    setDegrees(prev =>
-                      prev.map((item, i) =>
-                        i === index ? { ...item, degree: text } : item,
-                      ),
-                    )
-                  }
-                />
-                <Pressable
-                  onPress={() =>
-                    onButtonPressDegree(
-                      'library',
-                      {
-                        selectionLimit: 0,
-                        mediaType: 'photo',
-                        includeBase64: false,
-                        includeExtra: true,
-                      },
-                      index,
-                    )
-                  }
-                  style={{
-                    flex: 1,
-                    backgroundColor: WHITE,
-                    borderWidth: 1,
-                    borderColor: GRAY,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    paddingVertical: scale(10),
-                    borderRadius: scale(5),
-                    flexDirection: 'row',
-                  }}
-                >
-                  <Icon name="paperclip" size={scale(12)} color={GRAY} />
-                  <Text style={{ color: GRAY, marginLeft: scale(5) }}>
-                    Upload
-                  </Text>
-                </Pressable>
-              </View>
+              />
             ))}
-            <Pressable
+          </View>
+
+          {/* About */}
+          <Controller
+            control={control}
+            name="about"
+            render={({ field: { onChange, value } }) => (
+              <Input
+                style={[styles.input, { height: scale(100) }]}
+                placeholder="About"
+                placeholderTextColor={GRAY}
+                multiline
+                numberOfLines={5}
+                inputState={{ value, onChangeText: onChange }}
+                onChangeText={onChange}
+                textAlignVertical="top"
+                label={null}
+              />
+            )}
+          />
+
+          {/* Specialties */}
+          <Controller
+            control={control}
+            name="specialties"
+            render={({ field: { value, onChange } }) => (
+              <Input
+                inputState={{ value, onChangeText: onChange }}
+                placeholder="Specialties"
+                label={null}
+              />
+            )}
+          />
+
+          {/* Degrees */}
+          {fields.map((item, index) => (
+            <View
+              key={item.id}
               style={{
-                marginBottom: scale(20),
                 flexDirection: 'row',
                 alignItems: 'center',
-              }}
-              onPress={() =>
-                setDegrees([...degrees, { degree: '', image: null }])
-              }
-            >
-              <FAIcon name="plus-circle" size={20} color={BLACK} />
-              <Text style={{ marginLeft: scale(10) }}>Add another degree</Text>
-            </Pressable>
-
-            <Text style={{ fontSize: scale(16), color: BLACK }}>
-              Availbility
-            </Text>
-            <Text style={{ fontSize: scale(10), color: BLACK }}>
-              Select your days of availability
-            </Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-              {days.map((item, index) => (
-                <Pressable
-                  key={index}
-                  style={{
-                    backgroundColor: item.isSelected ? RED_COLOR : WHITE,
-                    borderWidth: 1,
-                    borderColor: RED_COLOR,
-                    borderRadius: scale(5),
-                    flexBasis: '12%',
-                    marginVertical: scale(5),
-                    marginHorizontal: scale(2),
-                    alignContent: 'center',
-                    justifyContent: 'center',
-                    paddingVertical: scale(3),
-                  }}
-                  onPress={() =>
-                    setDays(prev =>
-                      prev.map((item, i) =>
-                        i === index
-                          ? { ...item, isSelected: !item.isSelected }
-                          : item,
-                      ),
-                    )
-                  }
-                >
-                  <Text
-                    style={{
-                      color: item.isSelected ? WHITE : BLACK,
-                      textAlign: 'center',
-                      fontSize: scale(10),
-                    }}
-                  >
-                    {item.name}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-
-            <Text
-              style={{
-                fontSize: scale(10),
-                color: BLACK,
-                marginVertical: scale(8),
+                marginVertical: scale(5),
               }}
             >
-              Select your Available slots
-            </Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-              {time.map((item, index) => (
+              {fields.length > 1 && (
                 <Pressable
-                  key={index}
                   style={{
-                    backgroundColor: item.isSelected ? RED_COLOR : WHITE,
-                    borderWidth: 1,
-                    borderColor: RED_COLOR,
+                    backgroundColor: RED_COLOR,
+                    padding: scale(5),
                     borderRadius: scale(5),
-                    flexBasis: '20%',
-                    marginVertical: scale(2),
-                    marginHorizontal: scale(4),
-                    alignContent: 'center',
-                    justifyContent: 'center',
-                    paddingVertical: scale(3),
                   }}
-                  onPress={() =>
-                    setTime(prev =>
-                      prev.map((item, i) =>
-                        i === index
-                          ? { ...item, isSelected: !item.isSelected }
-                          : item,
-                      ),
-                    )
-                  }
+                  onPress={() => remove(index)}
                 >
-                  <Text
-                    style={{
-                      color: item.isSelected ? WHITE : BLACK,
-                      textAlign: 'center',
-                      fontSize: scale(10),
-                    }}
-                  >
-                    {item.name}
-                  </Text>
+                  <Icon name="trash" size={20} color={WHITE} />
                 </Pressable>
-              ))}
+              )}
+              <Controller
+                control={control}
+                name={`degrees.${index}.degree`}
+                render={({ field: { onChange, value } }) => (
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Degree"
+                    placeholderTextColor={GRAY}
+                    value={value}
+                    onChangeText={onChange}
+                  />
+                )}
+              />
+              <Pressable
+                onPress={() =>
+                  onButtonPressDegree(
+                    'library',
+                    {
+                      selectionLimit: 0,
+                      mediaType: 'photo',
+                      includeBase64: false,
+                    },
+                    index,
+                  )
+                }
+                style={{
+                  flex: 1,
+                  backgroundColor: WHITE,
+                  borderWidth: 1,
+                  borderColor: GRAY,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: scale(10),
+                  borderRadius: scale(5),
+                  flexDirection: 'row',
+                }}
+              >
+                <Icon name="paperclip" size={scale(12)} color={GRAY} />
+                <Text style={{ color: GRAY, marginLeft: scale(5) }}>
+                  Upload
+                </Text>
+              </Pressable>
             </View>
+          ))}
+
+          <Pressable
+            style={{
+              marginBottom: scale(20),
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+            onPress={() => append({ degree: '', image: null })}
+          >
+            <FAIcon name="plus-circle" size={20} color={BLACK} />
+            <Text style={{ marginLeft: scale(10) }}>Add another degree</Text>
+          </Pressable>
+
+          {/* Days */}
+          <Text style={{ fontSize: scale(16), color: BLACK }}>
+            Availability
+          </Text>
+          <Text style={{ fontSize: scale(10), color: BLACK }}>
+            Select your days of availability
+          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            {days.map((item, index) => (
+              <Pressable
+                key={index}
+                style={{
+                  backgroundColor: item.isSelected ? RED_COLOR : WHITE,
+                  borderWidth: 1,
+                  borderColor: RED_COLOR,
+                  borderRadius: scale(5),
+                  flexBasis: '12%',
+                  marginVertical: scale(5),
+                  marginHorizontal: scale(2),
+                  alignContent: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: scale(3),
+                }}
+                onPress={() =>
+                  setDays(prev =>
+                    prev.map((d, i) =>
+                      i === index ? { ...d, isSelected: !d.isSelected } : d,
+                    ),
+                  )
+                }
+              >
+                <Text
+                  style={{
+                    color: item.isSelected ? WHITE : BLACK,
+                    textAlign: 'center',
+                    fontSize: scale(10),
+                  }}
+                >
+                  {item.name}
+                </Text>
+              </Pressable>
+            ))}
           </View>
+
+          {/* Time */}
+          <Text
+            style={{
+              fontSize: scale(10),
+              color: BLACK,
+              marginVertical: scale(8),
+            }}
+          >
+            Select your Available slots
+          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            {time.map((item, index) => (
+              <Pressable
+                key={index}
+                style={{
+                  backgroundColor: item.isSelected ? RED_COLOR : WHITE,
+                  borderWidth: 1,
+                  borderColor: RED_COLOR,
+                  borderRadius: scale(5),
+                  flexBasis: '20%',
+                  marginVertical: scale(2),
+                  marginHorizontal: scale(4),
+                  alignContent: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: scale(3),
+                }}
+                onPress={() =>
+                  setTime(prev =>
+                    prev.map((t, i) =>
+                      i === index ? { ...t, isSelected: !t.isSelected } : t,
+                    ),
+                  )
+                }
+              >
+                <Text
+                  style={{
+                    color: item.isSelected ? WHITE : BLACK,
+                    textAlign: 'center',
+                    fontSize: scale(10),
+                  }}
+                >
+                  {item.name}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {/* Submit Button */}
           <Pressable
             style={[
               GlobalStyle.filedButton,
               { position: 'absolute', bottom: scale(20) },
             ]}
-            // onPress={() => navigation.navigate('UploadPicture')}
-            onPress={editProfile}
+            onPress={handleSubmit(editProfile)}
           >
             <Text style={GlobalStyle.filedButtonText}>Submit</Text>
           </Pressable>
