@@ -6,6 +6,10 @@ import {
   Dimensions,
   Pressable,
   TextInput,
+  ToastAndroid,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScaledSheet, scale } from 'react-native-size-matters';
@@ -32,134 +36,140 @@ const LoginScreen = ({ navigation }: Props) => {
   const emailOrNumber = useInputState('');
   const password = usePasswordInputState('');
   const dispatch = useAppDispatch();
+  const [loading, setLoading] = useState(false);
 
-  const sanitizePakPhone = (input: string) => {
-    if (!input) return '';
+  const validateEmailOrPhone = (input: string) => {
+    if (!input) {
+      ToastAndroid.show(
+        'Please enter email or phone number',
+        ToastAndroid.BOTTOM,
+      );
+      return null;
+    }
 
-    let phone = input;
-
-    // Convert Arabic-Indic numerals to standard digits
-    phone = phone.replace(/[٠-٩]/g, d =>
-      String.fromCharCode(d.charCodeAt(0) - 1632),
+    const isNumber = /^[0-9]+$/.test(
+      input.replace(/^\+92/, '').replace(/^0/, ''),
     );
 
-    // Remove all non-digit characters
-    phone = phone.replace(/[^0-9+]/g, '');
+    if (isNumber) {
+      // Normalize Pakistani phone number
+      let normalizedNumber = input;
+      if (input.startsWith('+92')) normalizedNumber = input.slice(3);
+      if (input.startsWith('0')) normalizedNumber = input.slice(1);
 
-    // Handle country code +92
-    if (phone.startsWith('0092')) phone = '+' + phone.slice(2); // 0092 -> +92
-    if (phone.startsWith('0') && !phone.startsWith('00'))
-      phone = '+92' + phone.slice(1); // 0XXXXXXXXX -> +92XXXXXXXXX
-    if (phone.startsWith('92') && !phone.startsWith('+')) phone = '+' + phone; // 92XXXXXXXXX -> +92XXXXXXXXX
+      // Validate number format: should start with 3 and be 10 digits (03XXYYYYYYY)
+      if (!/^3\d{9}$/.test(normalizedNumber)) {
+        ToastAndroid.show('Invalid Pakistani phone number', ToastAndroid.SHORT);
+        return null;
+      }
 
-    // Keep only first 13 chars (+92XXXXXXXXX)
-    phone = phone.slice(0, 13);
+      return { type: 'phone', value: normalizedNumber };
+    } else {
+      // Validate email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(input)) {
+        ToastAndroid.show('Invalid email format', ToastAndroid.SHORT);
+        return null;
+      }
 
-    return phone;
+      return { type: 'email', value: input };
+    }
   };
 
   const login = async () => {
+    setLoading(true);
     try {
-      let filteredInput = emailOrNumber?.value || '';
-
-      if (/^\d/.test(filteredInput)) {
-        // Phone number
-        filteredInput = filteredInput
-          .replace(/[٠-٩]/g, d => String.fromCharCode(d.charCodeAt(0) - 1632))
-          .replace(/[^0-9]/g, '');
-      } else {
-        // Email
-        filteredInput = filteredInput.replace(/[^A-Za-z0-9@._-]/g, '');
-      }
-
+      const validated = validateEmailOrPhone(emailOrNumber?.value?.trim());
+      if (!validated)
+        return ToastAndroid?.show(
+          'Incorrect number or email',
+          ToastAndroid?.BOTTOM,
+        );
+      console.log('email or phone', validated);
       const formData = new FormData();
-      formData.append('emailOrNumber', filteredInput);
+      if (validated?.type === 'email') {
+        formData.append('email', validated?.value);
+      } else {
+        formData.append('contact', validated?.value);
+      }
       formData?.append('password', password?.value);
-      // const token = AsyncStorage?.getItem('token')
-      // console.log("login request obj", formData)
-      // const res = await axios.post(`${config?.baseUrl}/login/login`, formData, {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data',
-      //     // "Authorization": `Bearer ${token}`
-      //   },
-      // });
-      // if (res?.data?.status) {
-      //   console.log('Logged in successfully', res?.data);
-      //   AsyncStorage?.setItem('userId', res?.data?.data?.userId);
-      //   AsyncStorage?.setItem('token', res?.data?.token);
-      //   // await AsyncStorage?.setItem('isLogin', 'true')
-      //   dispatch(setSigin(true));
-      // } else {
-      //   console.log('Login failed', res?.data?.message);
-      // }
-      console.log('emailOrNumber', emailOrNumber);
+      const res = await axios.post(`${config?.baseUrl}/login/login`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          // "Authorization": `Bearer ${token}`
+        },
+      });
+      if (res?.data?.status) {
+        console.log('Logged in successfully', res?.data);
+        AsyncStorage?.setItem('userId', res?.data?.data?.userId);
+        AsyncStorage?.setItem('token', res?.data?.token);
+        // await AsyncStorage?.setItem('isLogin', 'true')
+        dispatch(setSigin(true));
+      } else {
+        console.log('Login failed', res?.data?.message);
+      }
     } catch (error) {
       console.log('Error loggging in', error);
+    } finally {
+      setLoading(false);
     }
   };
   return (
     <SafeAreaView style={styles.mainContainer}>
-      <View style={styles.skipButtonContainer}>
-        {/* <Pressable style={styles.skipButton} onPress={()=>dispatch(setAuthSkiped(true))}><Text style={styles.skipButtonText}>SKIP</Text></Pressable> */}
-      </View>
-      <View style={styles.container}>
-        <Image
-          source={require('../../assets/png/logoBlack.png')}
-          style={styles.logo}
-          resizeMode="stretch"
-        />
-
-        <Text style={styles.mainText}>Login</Text>
-        <Text style={styles.text}>
-          Hi, Welcome Back, please log in to continue.
-        </Text>
-        <Input
-          inputState={emailOrNumber}
-          label="Email Address/Phone No."
-          placeholder="Enter email or phone"
-          onChangeText={text => {
-            let filteredText = text;
-
-            // Check if input starts with a digit or plus → treat as phone number
-            if (/^\d|\+/.test(filteredText)) {
-              filteredText = sanitizePakPhone(filteredText);
-            }
-            // else treat as email → leave as is
-            else {
-              // Email
-              filteredText = filteredText.replace(/[^A-Za-z0-9@._-]/g, '');
-            }
-            // Update the state
-            emailOrNumber?.onChangeText(filteredText);
-          }}
-          inputStyle={{ color: 'black' }}
-        />
-
-        <PasswordInput
-          inputState={password}
-          label={'Password'}
-          placeholder="Enter Password Here"
-        />
-        <View style={styles.forgotContainer}>
-          <Pressable style={styles.forgotButton}>
-            <Text style={styles.forgotButtonText}>Forgot Password?</Text>
-          </Pressable>
+      <KeyboardAvoidingView
+        behavior={Platform?.OS === 'ios' ? 'height' : 'padding'}
+      >
+        <View style={styles.skipButtonContainer}>
+          {/* <Pressable style={styles.skipButton} onPress={()=>dispatch(setAuthSkiped(true))}><Text style={styles.skipButtonText}>SKIP</Text></Pressable> */}
         </View>
-        <Pressable style={GlobalStyle.filedButton} onPress={() => login()}>
-          <Text style={GlobalStyle.filedButtonText}>Log In</Text>
-        </Pressable>
-        <View style={styles.signupContainer}>
-          <Pressable
-            style={styles.signupButton}
-            onPress={() => navigation.navigate('Signup')}
-          >
-            <Text style={[styles.signupButtonText, { color: BLACK }]}>
-              Don’t have an account?{' '}
-              <Text style={styles.signupButtonText}>Sign Up</Text>
-            </Text>
-          </Pressable>
+        <View style={styles.container}>
+          <Image
+            source={require('../../assets/png/logoBlack.png')}
+            style={styles.logo}
+            resizeMode="stretch"
+          />
+
+          <Text style={styles.mainText}>Login</Text>
+          <Text style={styles.text}>
+            Hi, Welcome Back, please log in to continue.
+          </Text>
+          <Input
+            inputState={emailOrNumber}
+            label="Email Address/Phone No."
+            placeholder="Enter email or phone"
+            inputStyle={{ color: 'black' }}
+          />
+
+          <PasswordInput
+            inputState={password}
+            label={'Password'}
+            placeholder="Enter Password Here"
+          />
+          <View style={styles.forgotContainer}>
+            <Pressable style={styles.forgotButton}>
+              <Text style={styles.forgotButtonText}>Forgot Password?</Text>
+            </Pressable>
+          </View>
+          {loading ? (
+            <ActivityIndicator size={'small'} color={WHITE}/>
+          ) : (
+            <Pressable style={GlobalStyle.filedButton} onPress={() => login()}>
+              <Text style={GlobalStyle.filedButtonText}>Log In</Text>
+            </Pressable>
+          )}
+          <View style={styles.signupContainer}>
+            <Pressable
+              style={styles.signupButton}
+              onPress={() => navigation.navigate('Signup')}
+            >
+              <Text style={[styles.signupButtonText, { color: BLACK }]}>
+                Don’t have an account?{' '}
+                <Text style={styles.signupButtonText}>Sign Up</Text>
+              </Text>
+            </Pressable>
+          </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -170,6 +180,7 @@ const styles = ScaledSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: '#fff',
+    justifyContent: 'center',
   },
   container: {
     width: '90%',

@@ -3,7 +3,12 @@ import { useState } from 'react';
 import { ScaledSheet } from 'react-native-size-matters';
 import { BLACK, GRAY } from '../../util/color';
 
-export const useInputState = (initialValue = ''): TextInputProps => {
+interface InputState {
+  value: string;
+  onChangeText: (text: string) => void;
+}
+
+export const useInputState = (initialValue = ''): InputState => {
   const [value, setValue] = useState(initialValue);
   return { value, onChangeText: setValue };
 };
@@ -11,16 +16,25 @@ export const useInputState = (initialValue = ''): TextInputProps => {
 interface InputBoxProps extends TextInputProps {
   inputState: ReturnType<typeof useInputState>;
   label: string | null;
-  inputStyle? : any
+  inputStyle?: any;
 }
-export const Input = ({ inputState, label, inputStyle, ...props }: InputBoxProps) => {
+export const Input = ({
+  inputState,
+  label,
+  inputStyle,
+  ...props
+}: InputBoxProps) => {
   return (
     <View style={styles.inputContainer}>
       {label && <Text style={styles.lable}>{label}</Text>}
       <TextInput
         {...props}
         {...inputState}
-        style={[styles.textInput,inputStyle]}
+        onChangeText={text => {
+          inputState?.onChangeText?.(text);
+          props?.onChangeText?.(text);
+        }}
+        style={[styles.textInput, inputStyle]}
         placeholderTextColor={GRAY}
       />
     </View>
