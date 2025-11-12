@@ -23,11 +23,20 @@ import {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 import OTPTextView from 'react-native-otp-textinput';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 type Props = NativeStackScreenProps<AuthStackType, 'OTPScreen'>;
 
 const OTPScreen = ({ navigation }: Props) => {
   const phone = useInputState('');
   const name = useInputState('');
+
+  const press = async () => {
+    const userId = await AsyncStorage?.getItem('userId');
+    const token = await AsyncStorage?.getItem('token');
+    console.log('user id', userId);
+    console.log('token', token);
+    navigation.navigate('PasswordScreen')
+  };
 
   return (
     <SafeAreaView style={styles.mainContainer}>
@@ -74,7 +83,7 @@ const OTPScreen = ({ navigation }: Props) => {
 
         <Pressable
           style={[GlobalStyle.filedButton, { marginVertical: scale(40) }]}
-          onPress={() => navigation.navigate('PasswordScreen')}
+          onPress={press}
         >
           <Text style={GlobalStyle.filedButtonText}>Verify</Text>
         </Pressable>
@@ -99,7 +108,7 @@ const styles = ScaledSheet.create({
   },
   container: {
     width: '90%',
-    marginTop : scale(40),
+    marginTop: scale(40),
     backgroundColor: WHITE,
     alignItems: 'center',
     alignSelf: 'center',

@@ -8,6 +8,7 @@ import {
   TextInput,
   ScrollView,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScaledSheet, scale } from 'react-native-size-matters';
@@ -32,6 +33,8 @@ import { DrawerParamList } from '../../navigations/drawerNavigation';
 import FAIcon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import axios from 'axios';
+import { config } from '../../config';
 
 type Props = DrawerScreenProps<DrawerParamList, 'EditProfile'>;
 
@@ -44,10 +47,19 @@ type FormValues = {
   about: string;
   specialties: string;
   degrees: { degree: string; image: any }[];
+  userId?: string | undefined;
 };
 
 const EditProfile = ({ navigation }: any) => {
-  const { control, handleSubmit, setValue } = useForm<FormValues>({
+  const [loading, setLoading] = useState(false);
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    getValues,
+    watch,
+    formState: { errors },
+  } = useForm<FormValues>({
     defaultValues: {
       name: '',
       email: '',
@@ -64,6 +76,8 @@ const EditProfile = ({ navigation }: any) => {
     control,
     name: 'degrees',
   });
+
+  const watchedDegrees = watch('degrees');
 
   const [days, setDays] = useState([
     { name: 'Mon', isSelected: false },
@@ -90,12 +104,16 @@ const EditProfile = ({ navigation }: any) => {
       index: number,
     ) => {
       const callback = (data: any) => {
+        // ✅ Get the current field values from the form state
+        const currentValues = getValues(`degrees.${index}`);
+
+        // ✅ Update only the image, keeping the existing degree name intact
         update(index, {
-          ...fields[index],
+          ...currentValues,
           image: {
-            uri: data?.assets[0]?.uri,
-            name: data?.assets[0]?.fileName,
-            type: data?.assets[0]?.type,
+            uri: data?.assets?.[0]?.uri,
+            name: data?.assets?.[0]?.fileName,
+            type: data?.assets?.[0]?.type,
           },
         });
       };
@@ -106,21 +124,69 @@ const EditProfile = ({ navigation }: any) => {
         ImagePicker.launchImageLibrary(options, callback);
       }
     },
-    [fields, update],
+    [update, getValues],
   );
 
+  const fillProfile = (data: FormValues) => {
+    const formData = new FormData();
+    formData?.append('id', data?.userId);
+    formData?.append('name', data?.name);
+    formData?.append('contact', '0987654321');
+    formData?.append('email', data?.email);
+    formData?.append('gender', '');
+    formData?.append('dob', '');
+    formData?.append('about', data?.about);
+    formData?.append('fees', data?.fee);
+    formData?.append('age', data?.age);
+    formData?.append('experience', data?.experience);
+    formData?.append('specialties', data?.specialties);
+    data?.degrees?.forEach((_d: { degree: string; image: any }) => {
+      formData?.append('degreeName[]', _d?.degree);
+      formData?.append('degreeFile[]', _d?.image);
+    });
+    return formData;
+  };
+
+  const fillSlots = () => {
+    console.log(
+      'Days selected',
+      days.filter(d => d.isSelected),
+    );
+    console.log(
+      'Time selected',
+      time.filter(t => t.isSelected),
+    );
+  };
+
   const editProfile = async (data: FormValues) => {
-    const userId = await AsyncStorage.getItem('userId');
-    console.log('userId', userId ?? 3785);
-    console.log('Form Data', data);
-    // console.log(
-    //   'Days selected',
-    //   days.filter(d => d.isSelected),
-    // );
-    // console.log(
-    //   'Time selected',
-    //   time.filter(t => t.isSelected),
-    // );
+    setLoading(true);
+    try {
+      const userId = await AsyncStorage.getItem('userId');
+      console.log('data', data);
+      const formData = fillProfile({ ...data, userId: userId ?? '3785' });
+      console.log('Form data', formData);
+
+      const res = await axios?.post(
+        `${config?.baseUrl}/doctors/profileUpdate`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `${config?.token}`,
+          },
+        },
+      );
+      if (res?.data?.status) {
+        console.log('Profile updated successfully', res?.data);
+        navigation?.navigate("UploadPicture")
+      } else {
+        console.log('Profile update failed', res?.data?.message);
+      }
+    } catch (error) {
+      console.log('Error updating profile', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -152,11 +218,13 @@ const EditProfile = ({ navigation }: any) => {
           <Controller
             control={control}
             name="name"
+            rules={{ required: true }}
             render={({ field: { value, onChange } }) => (
               <Input
                 inputState={{ value, onChangeText: onChange }}
                 placeholder="Full Name"
                 label={null}
+                inputStyle={{ borderColor: errors?.name ? RED_COLOR : GRAY }}
               />
             )}
           />
@@ -164,6 +232,7 @@ const EditProfile = ({ navigation }: any) => {
           {/* Email */}
           <Controller
             control={control}
+            rules={{ required: true }}
             name="email"
             render={({ field: { value, onChange } }) => (
               <Input
@@ -171,6 +240,7 @@ const EditProfile = ({ navigation }: any) => {
                 placeholder="Email address"
                 keyboardType="email-address"
                 label={null}
+                inputStyle={{ borderColor: errors?.email ? RED_COLOR : GRAY }}
               />
             )}
           />
@@ -186,10 +256,14 @@ const EditProfile = ({ navigation }: any) => {
               <Controller
                 key={i}
                 control={control}
+                rules={{ required: true }}
                 name={nameField}
                 render={({ field: { onChange, value } }) => (
                   <TextInput
-                    style={styles.input}
+                    style={[
+                      styles.input,
+                      { borderColor: errors?.[nameField] ? RED_COLOR : GRAY },
+                    ]}
                     value={value}
                     onChangeText={onChange}
                     placeholder={
@@ -206,10 +280,11 @@ const EditProfile = ({ navigation }: any) => {
           {/* About */}
           <Controller
             control={control}
+            rules={{ required: true }}
             name="about"
             render={({ field: { onChange, value } }) => (
               <Input
-                style={[styles.input, { height: scale(100) }]}
+                inputStyle={[styles.input, { height: scale(100) }]}
                 placeholder="About"
                 placeholderTextColor={GRAY}
                 multiline
@@ -225,82 +300,102 @@ const EditProfile = ({ navigation }: any) => {
           {/* Specialties */}
           <Controller
             control={control}
+            rules={{ required: true }}
             name="specialties"
             render={({ field: { value, onChange } }) => (
               <Input
                 inputState={{ value, onChangeText: onChange }}
                 placeholder="Specialties"
                 label={null}
+                inputStyle={{
+                  borderColor: errors?.specialties ? RED_COLOR : GRAY,
+                }}
               />
             )}
           />
 
           {/* Degrees */}
-          {fields.map((item, index) => (
-            <View
-              key={item.id}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginVertical: scale(5),
-              }}
-            >
-              {fields.length > 1 && (
-                <Pressable
-                  style={{
-                    backgroundColor: RED_COLOR,
-                    padding: scale(5),
-                    borderRadius: scale(5),
-                  }}
-                  onPress={() => remove(index)}
-                >
-                  <Icon name="trash" size={20} color={WHITE} />
-                </Pressable>
-              )}
-              <Controller
-                control={control}
-                name={`degrees.${index}.degree`}
-                render={({ field: { onChange, value } }) => (
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Degree"
-                    placeholderTextColor={GRAY}
-                    value={value}
-                    onChangeText={onChange}
-                  />
-                )}
-              />
-              <Pressable
-                onPress={() =>
-                  onButtonPressDegree(
-                    'library',
-                    {
-                      selectionLimit: 0,
-                      mediaType: 'photo',
-                      includeBase64: false,
-                    },
-                    index,
-                  )
-                }
+          {fields.map((item, index) => {
+            const degree = watchedDegrees?.[index]?.degree;
+            const image = watchedDegrees?.[index]?.image;
+
+            return (
+              <View
+                key={item.id}
                 style={{
-                  flex: 1,
-                  backgroundColor: WHITE,
-                  borderWidth: 1,
-                  borderColor: GRAY,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingVertical: scale(10),
-                  borderRadius: scale(5),
                   flexDirection: 'row',
+                  alignItems: 'center',
+                  marginVertical: scale(5),
                 }}
               >
-                <Icon name="paperclip" size={scale(12)} color={GRAY} />
-                <Text style={{ color: GRAY, marginLeft: scale(5) }}>
-                  Upload
-                </Text>
-              </Pressable>
-            </View>
-          ))}
+                <Controller
+                  control={control}
+                  name={`degrees.${index}.degree`}
+                  render={({ field: { onChange, value } }) => (
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Degree"
+                      placeholderTextColor={GRAY}
+                      value={value}
+                      onChangeText={onChange}
+                    />
+                  )}
+                />
+
+                <Pressable
+                  onPress={() =>
+                    onButtonPressDegree(
+                      'library',
+                      {
+                        selectionLimit: 0,
+                        mediaType: 'photo',
+                        includeBase64: false,
+                      },
+                      index,
+                    )
+                  }
+                  style={{
+                    flex: 1,
+                    backgroundColor: WHITE,
+                    borderWidth: 1,
+                    borderColor: GRAY,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: scale(10),
+                    borderRadius: scale(5),
+                    flexDirection: 'row',
+                  }}
+                >
+                  <Icon name="paperclip" size={scale(12)} color={GRAY} />
+                  <Text style={{ color: GRAY, marginLeft: scale(5) }}>
+                    {image?.name || 'Upload'}
+                  </Text>
+                </Pressable>
+                {/* ✅ Only show delete if there's something to delete */}
+                {(degree || image) && (
+                  <Pressable
+                    style={{
+                      backgroundColor: RED_COLOR,
+                      padding: scale(5),
+                      borderRadius: scale(5),
+                      margin: scale(5),
+                    }}
+                    onPress={() => {
+                      if (fields.length > 1) {
+                        remove(index);
+                      } else {
+                        // 🧹 Reset first field if it's the only one left
+                        setValue(`degrees.${0}.degree`, '');
+                        setValue(`degrees.${0}.image`, null);
+                      }
+                    }}
+                  >
+                    <Icon name="trash" size={20} color={WHITE} />
+                  </Pressable>
+                )}
+              </View>
+            );
+          })}
 
           <Pressable
             style={{
@@ -412,8 +507,13 @@ const EditProfile = ({ navigation }: any) => {
               { position: 'absolute', bottom: scale(20) },
             ]}
             onPress={handleSubmit(editProfile)}
+            // onPress={fillSlots}
           >
-            <Text style={GlobalStyle.filedButtonText}>Submit</Text>
+            {loading ? (
+              <ActivityIndicator size={'small'} color={WHITE} />
+            ) : (
+              <Text style={GlobalStyle.filedButtonText}>Submit</Text>
+            )}
           </Pressable>
           <View style={{ height: scale(100) }} />
         </ScrollView>

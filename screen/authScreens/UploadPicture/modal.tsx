@@ -2,6 +2,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { scale } from 'react-native-size-matters';
 import Icon from 'react-native-vector-icons/Feather';
 import { BLACK, WHITE } from '../../../util/color';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface UploadImageModalProps {
   show: boolean;
@@ -14,10 +15,16 @@ const UploadImageModal = ({
   setShow,
   navigation,
 }: UploadImageModalProps) => {
-  const press = () => {
-    setShow(false);
-    navigation?.navigate('Login');
+  const press = async () => {
+    try {
+      setShow(false);
+      await AsyncStorage.clear();
+      navigation.replace('Login');
+    } catch (error) {
+      console.error('Failed to clear AsyncStorage:', error);
+    }
   };
+
   return (
     <Modal
       visible={show}

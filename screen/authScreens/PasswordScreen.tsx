@@ -40,32 +40,31 @@ const PasswordScreen = ({ navigation }: Props) => {
   const setPassword = async () => {
     setLoading(true);
     try {
-        // if (password?.value === '' && confirmPassword?.value === ''){
-        //     ToastAndroid.show('Passwords should not be empty', ToastAndroid?.BOTTOM)
-        // }
-      // else 
-        if  (password?.value === confirmPassword?.value) {
+        if (password?.value === '' && confirmPassword?.value === ''){
+            ToastAndroid.show('Passwords should not be empty', ToastAndroid?.BOTTOM)
+        }
+      else if  (password?.value === confirmPassword?.value) {
         const formData = new FormData();
         const userId = await AsyncStorage.getItem('userId');
         const token = await AsyncStorage.getItem('token');
-        formData?.append('userId', userId ?? 3785);
+        formData?.append('userId', userId);
         formData?.append('password', password?.value);
-        // const res = await axios.post(
-        //   `${config?.baseUrl}/login/setPassword`,
-        //   formData,
-        //   {
-        //     headers: {
-        //       'Content-Type': 'multipart/form-data',
-        //       'Authorization': `${token ?? config?.token}`,
-        //     },
-        //   },
-        // );
-        // if (res?.data?.status) {
-        //   console.log('Password updated successfully', res?.data);
-        //   navigation?.navigate('EditProfile')
-        // } else {
-        //   console.log('Password updation failed', res?.data?.message);
-        // }
+        const res = await axios.post(
+          `${config?.baseUrl}/login/setPassword`,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              'Authorization': `${token}`,
+            },
+          },
+        );
+        if (res?.data?.status) {
+          console.log('Password updated successfully', res?.data);
+          navigation?.navigate('EditProfile')
+        } else {
+          console.log('Password updation failed', res?.data?.message);
+        }
         navigation?.navigate('EditProfile')
       } else {
         ToastAndroid.show("Passwords don't match", ToastAndroid.SHORT);
@@ -110,7 +109,7 @@ const PasswordScreen = ({ navigation }: Props) => {
 
           <Pressable
             style={[GlobalStyle.filedButton, { marginTop: scale(40) }]}
-            onPress={() => setPassword()}
+            onPress={setPassword}
           >
             {loading ? (
               <ActivityIndicator size={'small'} color={WHITE}/>

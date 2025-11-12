@@ -38,6 +38,8 @@ const SignupScreen = ({ navigation }: Props) => {
   const name = useInputState('');
   const contact = useInputState('');
 
+  const press = () => navigation?.navigate('OTPScreen')
+
   const signup = async () => {
     try {
       const formData = new FormData();
@@ -55,6 +57,9 @@ const SignupScreen = ({ navigation }: Props) => {
       );
       if (signupRes?.data?.status) {
         console.log('signup successfull', signupRes?.data);
+        AsyncStorage?.setItem('userId', signupRes?.data?.data?.userId);
+        AsyncStorage?.setItem('token', signupRes?.data?.token);
+        press()
       } else {
         console.log('Signup failed', signupRes?.data?.message);
       }
@@ -63,7 +68,6 @@ const SignupScreen = ({ navigation }: Props) => {
     }
   };
 
-  const press = () => navigation?.navigate('OTPScreen')
 
   return (
     <SafeAreaView style={styles.mainContainer}>
@@ -128,10 +132,10 @@ const SignupScreen = ({ navigation }: Props) => {
               <Input
                 inputState={contact}
                 label={null}
-                placeholder="Enter Your Email"
+                placeholder="Enter your phone number."
               />
             </View>
-            <Pressable style={GlobalStyle.filedButton} onPress={() => press()}>
+            <Pressable style={GlobalStyle.filedButton} onPress={signup}>
               <Text style={GlobalStyle.filedButtonText}>Register</Text>
             </Pressable>
           </ScrollView>

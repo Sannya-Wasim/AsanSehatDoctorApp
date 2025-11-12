@@ -90,7 +90,7 @@ const LoginScreen = ({ navigation }: Props) => {
       if (validated?.type === 'email') {
         formData.append('email', validated?.value);
       } else {
-        formData.append('contact', validated?.value);
+        formData.append('number', validated?.value);
       }
       formData?.append('password', password?.value);
       const res = await axios.post(`${config?.baseUrl}/login/login`, formData, {
@@ -103,7 +103,7 @@ const LoginScreen = ({ navigation }: Props) => {
         console.log('Logged in successfully', res?.data);
         AsyncStorage?.setItem('userId', res?.data?.data?.userId);
         AsyncStorage?.setItem('token', res?.data?.token);
-        // await AsyncStorage?.setItem('isLogin', 'true')
+        await AsyncStorage?.setItem('isLogin', 'true')
         dispatch(setSigin(true));
       } else {
         console.log('Login failed', res?.data?.message);

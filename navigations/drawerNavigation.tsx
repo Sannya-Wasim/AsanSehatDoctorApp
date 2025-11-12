@@ -42,16 +42,28 @@ export type DrawerParamList = {
 
     },
     RescheduleAppointment:{
-        id:number,
-        name:string,
-        image:any,
-        symptoms:string[],
-        condition:string,
-        date:string,
-        time:string,
-        rating:null | string,
-        review:null | string,
-        showButton:boolean,
+        patientId: string;
+  enquiryCode: string;
+  doctorId: string;
+  lhvCmwNurseId: string;
+  marviId: string;
+  appointmentDate: string; // could use Date if you parse it
+  appointmentTime: string; // e.g., "HH:mm:ss"
+  serviceRequest: string; // or string[] if you split it
+  enquiryType: string;
+  cctype: string;
+  paid: string;
+  pidd: string;
+  operator: string;
+  doctor: string;
+  name: string;
+  age: string; // could be number if you parse
+  gender: string;
+  cnic: string;
+  address: string;
+  status_class_name: string;
+  statusName: string;
+  statusId: string;
     },
     JoinAppointment:{
         id:number,
