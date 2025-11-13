@@ -287,7 +287,7 @@ const HomeScreen = ({ navigation }: Props) => {
               reshceduleNav={() =>
                 navigation.navigate('RescheduleAppointment', item)
               }
-            //   joinNav={() => navigation.navigate('JoinAppointment', item)}
+              joinNav={() => navigation.navigate('JoinAppointment', item)}
             showButton={true}
               {...item}
             />

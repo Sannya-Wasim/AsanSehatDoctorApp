@@ -16,10 +16,10 @@ import Icon from 'react-native-vector-icons/Feather'
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome6'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import RescheduleAppointment from "../screen/Home/RescheduleAppointment";
-import JoinAppointment from "../screen/Home/JoinAppointment";
 import Appointments from "../screen/Home/Appointments";
 import Profile from "../screen/Home/Profile";
 import EditProfile from "../screen/authScreens/EditProfile";
+import JoinAppointment from "../screen/Home/JointAppointment";
 
 
 export type DrawerParamList = {

@@ -176,7 +176,7 @@ const Appointment = (props: Props) => {
           </Pressable>
 
           <Pressable
-            // onPress={() => (props?.joinNav ? props?.joinNav() : null)}
+            onPress={() => (props?.joinNav ? props?.joinNav() : null)}
             style={[
               GlobalStyle.filedButton,
               {
