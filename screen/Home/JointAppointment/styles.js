@@ -64,9 +64,11 @@ export const prescriptionStyles = ScaledSheet?.create({
     justifyContent: 'space-between',
     // alignItems: 'center',
     padding: scale(20),
-    marginTop : scale(50)
+    marginTop : scale(50),
+    
   },
   form : {
     // backgroundColor : 'rgb(0,0,0,0.1)'
+    backgroundColor : "red"
   }
 });

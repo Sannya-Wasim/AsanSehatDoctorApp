@@ -39,9 +39,11 @@ type IFormInput = {
 const Prescription = ({
   navigation,
   patientId,
+  setModal
 }: {
   navigation: any;
   patientId: string;
+  setModal : Function
 }) => {
   const [calendar, setCalendar] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -103,7 +105,7 @@ const Prescription = ({
 
   const onSubmit = async (data: IFormInput) => {
     setLoading(true);
-    // console.log('data', data);
+    console.log('data', data);
     try {
       const cleaned = data.prescriptions.map(({ id, ...rest }) => rest);
       const userid = await AsyncStorage?.getItem('userId');
@@ -133,6 +135,7 @@ const Prescription = ({
       console.log("res", res)
       if (res?.data?.status) {
         console.log('Prescription added successfully', res?.data?.data);
+        setModal(true)
       } else {
         console.log('Prescription addition failed', res?.data?.message);
       }

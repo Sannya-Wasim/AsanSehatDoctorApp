@@ -1,27 +1,40 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { scale } from 'react-native-size-matters';
 import Icon from 'react-native-vector-icons/Feather';
-import { BLACK, WHITE } from '../../../util/color';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BLACK, WHITE } from '../../util/color';
 
-interface UploadImageModalProps {
+interface CustomModalProps {
   show: boolean;
   navigation: any;
   setShow: any;
+  title: string;
+  text: string;
+  buttonText : string;
+  type: 'auth' | 'prescription';
 }
 
-const UploadImageModal = ({
+const CustomModal = ({
   show,
   setShow,
   navigation,
-}: UploadImageModalProps) => {
+  type,
+  title,
+  text,
+  buttonText
+}: CustomModalProps) => {
   const press = async () => {
-    try {
+    if (type === 'auth') {
+      try {
+        setShow(false);
+        await AsyncStorage.clear();
+        navigation.replace('Login');
+      } catch (error) {
+        console.error('Failed to clear AsyncStorage:', error);
+      }
+    } else {
       setShow(false);
-      await AsyncStorage.clear();
-      navigation.replace('Login');
-    } catch (error) {
-      console.error('Failed to clear AsyncStorage:', error);
+      navigation?.navigate('Home');
     }
   };
 
@@ -36,13 +49,12 @@ const UploadImageModal = ({
       <View style={styles?.content}>
         <View style={styles?.modalView}>
           <Icon name="check-circle" size={scale(100)} color="green" />
-          <Text style={styles?.header}>Request Submitted!</Text>
+          <Text style={styles?.header}>{title}</Text>
           <Text style={styles?.text}>
-            We have received your request. Kindly wait for approval, our staff
-            will get in touch with you shortly for confirmation.
+            {text}
           </Text>
           <Pressable style={styles?.button} onPress={press}>
-            <Text style={styles?.buttonText}>Confirm</Text>
+            <Text style={styles?.buttonText}>{buttonText}</Text>
           </Pressable>
           <Text style={styles?.link}>support@asaansehat.com</Text>
         </View>
@@ -108,4 +120,4 @@ const styles = StyleSheet?.create({
   },
 });
 
-export default UploadImageModal;
+export default CustomModal;

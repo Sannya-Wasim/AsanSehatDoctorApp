@@ -8,17 +8,17 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import GlobalStyle from '../../../util/styles';
+import GlobalStyle from '../../util/styles';
 import { useCallback, useState } from 'react';
 import * as ImagePicker from 'react-native-image-picker';
-import ProfileIcon from '../../../assets/svg/profileIcon';
-import { BLACK, RED_COLOR, WHITE } from '../../../util/color';
+import ProfileIcon from '../../assets/svg/profileIcon';
+import { BLACK, RED_COLOR, WHITE } from '../../util/color';
 import { scale } from 'react-native-size-matters';
 import axios from 'axios';
-import { config } from '../../../config';
-import UploadImageModal from './modal';
+import { config } from '../../config';
 import { DrawerScreenProps } from '@react-navigation/drawer';
-import { DrawerParamList } from '../../../navigations/drawerNavigation';
+import { DrawerParamList } from '../../navigations/drawerNavigation';
+import CustomModal from '../../components/modal';
 
 type Props = DrawerScreenProps<DrawerParamList, 'EditProfile'>;
 
@@ -131,10 +131,15 @@ const UploadPicture = ({ navigation }: Props) => {
           </Pressable>
         </>
       ) : (
-        <UploadImageModal
+        <CustomModal
           show={modal}
           setShow={setModal}
+          title="Request Submitted!"
+          text="We have received your request. Kindly wait for approval, our staff
+            will get in touch with you shortly for confirmation."
+          type="auth"
           navigation={navigation}
+          buttonText={'Confirm'}
         />
       )}
     </SafeAreaView>

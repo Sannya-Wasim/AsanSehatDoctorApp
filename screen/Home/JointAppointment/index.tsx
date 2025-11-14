@@ -29,6 +29,7 @@ import { styles } from './styles';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Call from './components/call';
 import Prescription from './components/prescription';
+import CustomModal from '../../../components/modal';
 
 // type Props = NativeStackScreenProps<HomeStackScreenType, 'MainHomeScreen'> ;
 type HomeStack = DrawerScreenProps<DrawerParamList, 'JoinAppointment'>;
@@ -39,6 +40,7 @@ const JoinAppointment = ({ navigation, route }: Props) => {
   const { params } = route;
   // console.log("params", params)
   const [call, setCall] = useState(true);
+  const [success, setSuccess] = useState(false);
 
   return (
     <View style={styles.mainContainer}>
@@ -49,8 +51,22 @@ const JoinAppointment = ({ navigation, route }: Props) => {
       />
       {call ? (
         <Call navigation={navigation} setShow={setCall} />
+      ) : success ? (
+        <CustomModal
+          show={success}
+          setShow={setSuccess}
+          title="Submitted Successfully"
+          text="Your prescription has been submitted successfully"
+          type="prescription"
+          navigation={navigation}
+          buttonText={'Back to Home'}
+        />
       ) : (
-        <Prescription navigation={navigation} patientId={params?.patientId}/>
+        <Prescription
+          navigation={navigation}
+          patientId={params?.patientId}
+          setModal={setSuccess}
+        />
       )}
     </View>
   );
