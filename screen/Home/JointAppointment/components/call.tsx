@@ -20,7 +20,7 @@ const Call = ({ navigation, setShow }: any) => {
     {
       id: 1,
       icon: <Icon name="clipboard" size={25} color={WHITE} />,
-        press : () => setShow(false)
+        press : () => navigation?.navigate("PatientRecord")
     },
     {
       id: 2,
@@ -40,7 +40,7 @@ const Call = ({ navigation, setShow }: any) => {
     {
       id: 5,
       icon: <MaterialIcon name="call-end" size={25} color={WHITE} />,
-      // press :
+      press : () => setShow(false)
     },
   ];
   return (
