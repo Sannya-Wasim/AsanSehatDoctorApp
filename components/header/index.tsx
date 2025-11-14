@@ -56,7 +56,7 @@ export function MainScreenHeader({ toggleDrawer, walletNav }: PropsMainScreen) {
 }
 
 type PropsComonHeader = {
-  navigate: Function;
+  navigate?: Function;
   back: Function;
   title: string;
 };
@@ -101,7 +101,7 @@ export function AllHeader({ navigate, back, title }: PropsComonHeader) {
         ]}
       >
         <Icon name="phone-call" size={scale(15)} color={WHITE} />
-        <Text style={[GlobalStyle.filedButtonText, { marginLeft: scale(4) }]}>
+        <Text style={[GlobalStyle.filedButtonText, { marginLeft: scale(4), }]}>
           Help
         </Text>
       </Pressable>

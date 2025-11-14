@@ -3,11 +3,11 @@ import { ScaledSheet, scale } from 'react-native-size-matters';
 import { WHITE } from '../../../util/color';
 
 export const styles = ScaledSheet?.create({
-mainContainer: {
-    // backgroundColor: 'red',
+  mainContainer: {
+    backgroundColor: WHITE,
     flex: 1,
   },
-})
+});
 
 export const callStyles = ScaledSheet.create({
   imgBg: {
@@ -30,33 +30,43 @@ export const callStyles = ScaledSheet.create({
   },
   footer: {
     alignItems: 'center',
-    marginVertical : '30@s'
+    marginVertical: '30@s',
   },
   heading: {
     fontSize: '18@s',
     color: WHITE,
     fontWeight: 'bold',
   },
-  text: { 
-    fontSize: '10@s', 
-    color: WHITE, 
-    marginVertical : '5@s'
-},
+  text: {
+    fontSize: '10@s',
+    color: WHITE,
+    marginVertical: '5@s',
+  },
 
   buttons: {
     flexDirection: 'row',
-    alignItems : "center",
-    justifyContent : "space-evenly"
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
   },
   button: {
-    padding : '15@s',
-    borderRadius : '40@s',
-    margin : '5@s'
+    padding: '15@s',
+    borderRadius: '40@s',
+    margin: '5@s',
   },
 });
 
 export const prescriptionStyles = ScaledSheet?.create({
-    container : {
-        flex : 1
-    }
-})
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'space-between',
+    // alignItems: 'center',
+    padding: scale(20),
+    marginTop : scale(50)
+  },
+  form : {
+    // backgroundColor : 'rgb(0,0,0,0.1)'
+  }
+});

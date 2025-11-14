@@ -28,6 +28,7 @@ import Appointment from '../../../components/apointments';
 import { styles } from './styles';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Call from './components/call';
+import Prescription from './components/prescription';
 
 // type Props = NativeStackScreenProps<HomeStackScreenType, 'MainHomeScreen'> ;
 type HomeStack = DrawerScreenProps<DrawerParamList, 'JoinAppointment'>;
@@ -36,17 +37,21 @@ type Props = HomeStack;
 
 const JoinAppointment = ({ navigation, route }: Props) => {
   const { params } = route;
-  const [call, setCall] = useState(true)
-  
+  // console.log("params", params)
+  const [call, setCall] = useState(true);
 
   return (
     <View style={styles.mainContainer}>
       <StatusBar
         barStyle={'dark-content'}
-        translucent
-        backgroundColor={'transparent'}
+        translucent={call}
+        backgroundColor={call ? 'transparent' : WHITE}
       />
-    {call && <Call navigation={navigation} setShow={setCall}/>}
+      {call ? (
+        <Call navigation={navigation} setShow={setCall} />
+      ) : (
+        <Prescription navigation={navigation} patientId={params?.patientId}/>
+      )}
     </View>
   );
 };

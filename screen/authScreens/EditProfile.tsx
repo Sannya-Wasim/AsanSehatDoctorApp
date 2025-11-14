@@ -318,7 +318,6 @@ const EditProfile = ({ navigation }: any) => {
           {fields.map((item, index) => {
             const degree = watchedDegrees?.[index]?.degree;
             const image = watchedDegrees?.[index]?.image;
-
             return (
               <View
                 key={item.id}
