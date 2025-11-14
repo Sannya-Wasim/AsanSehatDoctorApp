@@ -69,6 +69,5 @@ export const prescriptionStyles = ScaledSheet?.create({
   },
   form : {
     // backgroundColor : 'rgb(0,0,0,0.1)'
-    backgroundColor : "red"
   }
 });

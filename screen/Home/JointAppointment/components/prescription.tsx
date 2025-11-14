@@ -20,6 +20,7 @@ import moment from 'moment';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { config } from '../../../../config';
+import { ScrollView } from 'react-native-gesture-handler';
 
 type IFormInput = {
   symptoms: string;
@@ -154,7 +155,7 @@ const Prescription = ({
       {/* Content */}
       <View style={styles?.content}>
         {/* Form */}
-        <View style={styles?.form}>
+        <ScrollView style={styles?.form}>
           {/* Symptoms */}
           <Controller
             control={control}
@@ -409,7 +410,7 @@ const Prescription = ({
               }}
             />
           )}
-        </View>
+        </ScrollView>
         {/* Button */}
         <Pressable
           style={GlobalStyle?.filedButton}
