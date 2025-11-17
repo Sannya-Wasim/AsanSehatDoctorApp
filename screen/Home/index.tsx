@@ -18,7 +18,7 @@ import { Input, useInputState } from '../../components/inputs/textInput';
 import FastImage from 'react-native-fast-image';
 import { BLACK, RED_COLOR, WHITE } from '../../util/color';
 import Icon from 'react-native-vector-icons/Feather';
-import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import { DrawerParamList } from '../../navigations/drawerNavigation';
 import { DrawerActions } from '@react-navigation/native';
 
@@ -193,7 +193,7 @@ const HomeScreen = ({ navigation }: Props) => {
               }}
             >
               <MaterialIcon
-                name="emoticon-happy-outline"
+                name="insert-emoticon"
                 size={scale(40)}
                 color={'#0D5495'}
               />
@@ -223,7 +223,7 @@ const HomeScreen = ({ navigation }: Props) => {
                 borderRadius: scale(100),
               }}
             >
-              <MaterialIcon name="cash" size={scale(40)} color={'#0D5495'} />
+              <MaterialIcon name="payments" size={scale(40)} color={'#0D5495'} />
             </View>
             <Text
               style={{
@@ -244,7 +244,7 @@ const HomeScreen = ({ navigation }: Props) => {
         </View>
         {appointments?.length > 0 ? (
           <>
-            <Text style={{ fontSize: scale(16), color: BLACK }}>
+            <Text style={{ fontSize: scale(16), color: BLACK, marginTop : scale(20) }}>
               Upcoming Appointments
             </Text>
             <FlatList
