@@ -13,7 +13,7 @@ interface CustomModalProps {
   title: string;
   text: string;
   buttonText : string;
-  type: 'auth' | 'prescription';
+  type: 'auth' | 'prescription' | 'reschedule';
 }
 
 const CustomModal = ({

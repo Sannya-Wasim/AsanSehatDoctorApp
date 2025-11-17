@@ -9,6 +9,9 @@ import {
   ScrollView,
   StatusBar,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ToastAndroid,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScaledSheet, scale } from 'react-native-size-matters';
@@ -54,7 +57,7 @@ type FormValues = {
 
 const EditProfile = ({ navigation }: any) => {
   const [loading, setLoading] = useState(false);
-  const user = useSelector((state : RootState) => state?.auth?.user)
+  const user = useSelector((state: RootState) => state?.auth?.user);
   const {
     control,
     handleSubmit,
@@ -83,13 +86,13 @@ const EditProfile = ({ navigation }: any) => {
   const watchedDegrees = watch('degrees');
 
   const [days, setDays] = useState([
-    { name: 'Mon', isSelected: false },
-    { name: 'Tue', isSelected: false },
-    { name: 'Wed', isSelected: false },
-    { name: 'Thu', isSelected: false },
-    { name: 'Fri', isSelected: false },
-    { name: 'Sat', isSelected: false },
-    { name: 'Sun', isSelected: false },
+    { name: 'Mon', value: 'monday[]', isSelected: false },
+    { name: 'Tue', value: 'tuesday[]', isSelected: false },
+    { name: 'Wed', value: 'wednesday[]', isSelected: false },
+    { name: 'Thu', value: 'thursday[]', isSelected: false },
+    { name: 'Fri', value: 'friday[]', isSelected: false },
+    { name: 'Sat', value: 'saturday[]', isSelected: false },
+    { name: 'Sun', value: 'sunday[]', isSelected: false },
   ]);
 
   const [time, setTime] = useState([
@@ -151,14 +154,52 @@ const EditProfile = ({ navigation }: any) => {
   };
 
   const fillSlots = () => {
-    console.log(
-      'Days selected',
-      days.filter(d => d.isSelected),
-    );
-    console.log(
-      'Time selected',
-      time.filter(t => t.isSelected),
-    );
+    // console.log(
+    //   'Days selected',
+    //   days.filter(d => d.isSelected),
+    // );
+    // console.log(
+    //   'Time selected',
+    //   time.filter(t => t.isSelected)?.map(t => t?.name),
+    // );
+    const selectedDays = days.filter(d => d.isSelected);
+    const selectedTimes = time.filter(t => t.isSelected).map(t => t.name);
+
+    const result: any = {};
+
+    selectedDays.forEach(d => {
+      result[d.value] = selectedTimes; // dynamic key using []
+    });
+
+    console.log(result);
+  };
+
+  const updateTimes = async () => {
+    try {
+      const formdata = new FormData();
+      formdata?.append('id', user?.id);
+      const selectedTimes = time.filter(t => t.isSelected).map(t => t.name);
+      days.forEach(d => {
+        formdata?.append(d?.value, d?.isSelected ? JSON?.stringify(selectedTimes) : 'off')
+      });
+      console.log("formdata", formdata)
+      const res = await axios?.post(`${config?.baseUrl}/doctors/clinicDateTimeUpdate`, formdata,{
+        headers : {
+          'Content-Type' : 'multipart/form-data',
+          'Authorization' : `${user?.token}`
+        }
+      })
+      if (res?.data?.status){
+        console.log('Clinic times updated successfully', res?.data?.data)
+        navigation?.navigate('UploadPicture');
+      } else {
+        console.log("Failed to update clinic times", res?.data?.message)
+        ToastAndroid?.show(`Failed to update clinic times: ${res?.data?.message}`, ToastAndroid?.TOP)
+      }
+    } catch (error) {
+      console.log('Error updating times', error);
+      ToastAndroid?.show(`Error updating times: ${error}`, ToastAndroid?.TOP)
+    } 
   };
 
   const editProfile = async (data: FormValues) => {
@@ -174,18 +215,20 @@ const EditProfile = ({ navigation }: any) => {
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            Authorization: `${config?.token}`,
+            'Authorization': `${user?.token}`,
           },
         },
       );
       if (res?.data?.status) {
         console.log('Profile updated successfully', res?.data);
-        navigation?.navigate("UploadPicture")
+        await updateTimes()
       } else {
         console.log('Profile update failed', res?.data?.message);
+        ToastAndroid?.show(`Failed to update profile: ${res?.data?.message}`, ToastAndroid?.TOP)
       }
     } catch (error) {
       console.log('Error updating profile', error);
+      ToastAndroid?.show(`Error updating profile: ${error}`, ToastAndroid?.TOP)
     } finally {
       setLoading(false);
     }
@@ -198,327 +241,335 @@ const EditProfile = ({ navigation }: any) => {
         backgroundColor={WHITE}
         barStyle={'dark-content'}
       />
-      <View style={styles.header}>
-        <Text
-          style={{ color: RED_COLOR, fontSize: scale(20), fontWeight: 'bold' }}
-        >
-          Register as a Doctor
-        </Text>
-        <Text style={{ marginTop: scale(10) }}>
-          Kindly fill out this form to register as a doctor.
-        </Text>
-      </View>
-      <View style={styles.container}>
-        <ScrollView
-          style={{ width: '100%', alignSelf: 'center', marginTop: scale(5) }}
-        >
-          <Text style={{ fontSize: scale(16), color: BLACK }}>
-            Personal Information
+      <KeyboardAvoidingView
+        behavior={Platform?.OS === 'ios' ? 'height' : 'padding'}
+      >
+        <View style={styles.header}>
+          <Text
+            style={{
+              color: RED_COLOR,
+              fontSize: scale(20),
+              fontWeight: 'bold',
+            }}
+          >
+            Register as a Doctor
           </Text>
+          <Text style={{ marginTop: scale(10) }}>
+            Kindly fill out this form to register as a doctor.
+          </Text>
+        </View>
+        <View style={styles.container}>
+          <ScrollView
+            style={{ width: '100%', alignSelf: 'center', marginTop: scale(5) }}
+          >
+            <Text style={{ fontSize: scale(16), color: BLACK }}>
+              Personal Information
+            </Text>
 
-          {/* Name */}
-          <Controller
-            control={control}
-            name="name"
-            rules={{ required: true }}
-            render={({ field: { value, onChange } }) => (
-              <Input
-                inputState={{ value, onChangeText: onChange }}
-                placeholder="Full Name"
-                label={null}
-                inputStyle={{ borderColor: errors?.name ? RED_COLOR : GRAY }}
-              />
-            )}
-          />
+            {/* Name */}
+            <Controller
+              control={control}
+              name="name"
+              rules={{ required: true }}
+              render={({ field: { value, onChange } }) => (
+                <Input
+                  inputState={{ value, onChangeText: onChange }}
+                  placeholder="Full Name"
+                  label={null}
+                  inputStyle={{ borderColor: errors?.name ? RED_COLOR : GRAY }}
+                />
+              )}
+            />
 
-          {/* Email */}
-          <Controller
-            control={control}
-            rules={{ required: true }}
-            name="email"
-            render={({ field: { value, onChange } }) => (
-              <Input
-                inputState={{ value, onChangeText: onChange }}
-                placeholder="Email address"
-                keyboardType="email-address"
-                label={null}
-                inputStyle={{ borderColor: errors?.email ? RED_COLOR : GRAY }}
-              />
-            )}
-          />
+            {/* Email */}
+            <Controller
+              control={control}
+              rules={{ required: true }}
+              name="email"
+              render={({ field: { value, onChange } }) => (
+                <Input
+                  inputState={{ value, onChangeText: onChange }}
+                  placeholder="Email address"
+                  keyboardType="email-address"
+                  label={null}
+                  inputStyle={{ borderColor: errors?.email ? RED_COLOR : GRAY }}
+                />
+              )}
+            />
 
-          {/* Age, Experience, Fee */}
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            {(
-              ['age', 'experience', 'fee'] as (keyof Pick<
-                FormValues,
-                'age' | 'experience' | 'fee'
-              >)[]
-            ).map((nameField, i) => (
-              <Controller
-                key={i}
-                control={control}
-                rules={{ required: true }}
-                name={nameField}
-                render={({ field: { onChange, value } }) => (
-                  <TextInput
-                    style={[
-                      styles.input,
-                      { borderColor: errors?.[nameField] ? RED_COLOR : GRAY },
-                    ]}
-                    value={value}
-                    onChangeText={onChange}
-                    placeholder={
-                      nameField.charAt(0).toUpperCase() + nameField.slice(1)
-                    }
-                    placeholderTextColor={GRAY}
-                    keyboardType="number-pad"
-                  />
-                )}
-              />
-            ))}
-          </View>
-
-          {/* About */}
-          <Controller
-            control={control}
-            rules={{ required: true }}
-            name="about"
-            render={({ field: { onChange, value } }) => (
-              <Input
-                inputStyle={[styles.input, { height: scale(100) }]}
-                placeholder="About"
-                placeholderTextColor={GRAY}
-                multiline
-                numberOfLines={5}
-                inputState={{ value, onChangeText: onChange }}
-                onChangeText={onChange}
-                textAlignVertical="top"
-                label={null}
-              />
-            )}
-          />
-
-          {/* Specialties */}
-          <Controller
-            control={control}
-            rules={{ required: true }}
-            name="specialties"
-            render={({ field: { value, onChange } }) => (
-              <Input
-                inputState={{ value, onChangeText: onChange }}
-                placeholder="Specialties"
-                label={null}
-                inputStyle={{
-                  borderColor: errors?.specialties ? RED_COLOR : GRAY,
-                }}
-              />
-            )}
-          />
-
-          {/* Degrees */}
-          {fields.map((item, index) => {
-            const degree = watchedDegrees?.[index]?.degree;
-            const image = watchedDegrees?.[index]?.image;
-            return (
-              <View
-                key={item.id}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginVertical: scale(5),
-                }}
-              >
+            {/* Age, Experience, Fee */}
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {(
+                ['age', 'experience', 'fee'] as (keyof Pick<
+                  FormValues,
+                  'age' | 'experience' | 'fee'
+                >)[]
+              ).map((nameField, i) => (
                 <Controller
+                  key={i}
                   control={control}
-                  name={`degrees.${index}.degree`}
+                  rules={{ required: true }}
+                  name={nameField}
                   render={({ field: { onChange, value } }) => (
                     <TextInput
-                      style={styles.input}
-                      placeholder="Degree"
-                      placeholderTextColor={GRAY}
+                      style={[
+                        styles.input,
+                        { borderColor: errors?.[nameField] ? RED_COLOR : GRAY },
+                      ]}
                       value={value}
                       onChangeText={onChange}
+                      placeholder={
+                        nameField.charAt(0).toUpperCase() + nameField.slice(1)
+                      }
+                      placeholderTextColor={GRAY}
+                      keyboardType="number-pad"
                     />
                   )}
                 />
+              ))}
+            </View>
 
-                <Pressable
-                  onPress={() =>
-                    onButtonPressDegree(
-                      'library',
-                      {
-                        selectionLimit: 0,
-                        mediaType: 'photo',
-                        includeBase64: false,
-                      },
-                      index,
-                    )
-                  }
+            {/* About */}
+            <Controller
+              control={control}
+              rules={{ required: true }}
+              name="about"
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  inputStyle={[styles.input, { height: scale(100) }]}
+                  placeholder="About"
+                  placeholderTextColor={GRAY}
+                  multiline
+                  numberOfLines={5}
+                  inputState={{ value, onChangeText: onChange }}
+                  onChangeText={onChange}
+                  textAlignVertical="top"
+                  label={null}
+                />
+              )}
+            />
+
+            {/* Specialties */}
+            <Controller
+              control={control}
+              rules={{ required: true }}
+              name="specialties"
+              render={({ field: { value, onChange } }) => (
+                <Input
+                  inputState={{ value, onChangeText: onChange }}
+                  placeholder="Specialties"
+                  label={null}
+                  inputStyle={{
+                    borderColor: errors?.specialties ? RED_COLOR : GRAY,
+                  }}
+                />
+              )}
+            />
+
+            {/* Degrees */}
+            {fields.map((item, index) => {
+              const degree = watchedDegrees?.[index]?.degree;
+              const image = watchedDegrees?.[index]?.image;
+              return (
+                <View
+                  key={item.id}
                   style={{
-                    flex: 1,
-                    backgroundColor: WHITE,
-                    borderWidth: 1,
-                    borderColor: GRAY,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    paddingVertical: scale(10),
-                    borderRadius: scale(5),
                     flexDirection: 'row',
+                    alignItems: 'center',
+                    marginVertical: scale(5),
                   }}
                 >
-                  <Icon name="paperclip" size={scale(12)} color={GRAY} />
-                  <Text style={{ color: GRAY, marginLeft: scale(5) }}>
-                    {image?.name || 'Upload'}
-                  </Text>
-                </Pressable>
-                {/* ✅ Only show delete if there's something to delete */}
-                {(degree || image) && (
+                  <Controller
+                    control={control}
+                    name={`degrees.${index}.degree`}
+                    render={({ field: { onChange, value } }) => (
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Degree"
+                        placeholderTextColor={GRAY}
+                        value={value}
+                        onChangeText={onChange}
+                      />
+                    )}
+                  />
+
                   <Pressable
+                    onPress={() =>
+                      onButtonPressDegree(
+                        'library',
+                        {
+                          selectionLimit: 0,
+                          mediaType: 'photo',
+                          includeBase64: false,
+                        },
+                        index,
+                      )
+                    }
                     style={{
-                      backgroundColor: RED_COLOR,
-                      padding: scale(5),
+                      flex: 1,
+                      backgroundColor: WHITE,
+                      borderWidth: 1,
+                      borderColor: GRAY,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingVertical: scale(10),
                       borderRadius: scale(5),
-                      margin: scale(5),
-                    }}
-                    onPress={() => {
-                      if (fields.length > 1) {
-                        remove(index);
-                      } else {
-                        // 🧹 Reset first field if it's the only one left
-                        setValue(`degrees.${0}.degree`, '');
-                        setValue(`degrees.${0}.image`, null);
-                      }
+                      flexDirection: 'row',
                     }}
                   >
-                    <Icon name="trash" size={20} color={WHITE} />
+                    <Icon name="paperclip" size={scale(12)} color={GRAY} />
+                    <Text style={{ color: GRAY, marginLeft: scale(5) }}>
+                      {image?.name || 'Upload'}
+                    </Text>
                   </Pressable>
-                )}
-              </View>
-            );
-          })}
+                  {/* ✅ Only show delete if there's something to delete */}
+                  {(degree || image) && (
+                    <Pressable
+                      style={{
+                        backgroundColor: RED_COLOR,
+                        padding: scale(5),
+                        borderRadius: scale(5),
+                        margin: scale(5),
+                      }}
+                      onPress={() => {
+                        if (fields.length > 1) {
+                          remove(index);
+                        } else {
+                          // 🧹 Reset first field if it's the only one left
+                          setValue(`degrees.${0}.degree`, '');
+                          setValue(`degrees.${0}.image`, null);
+                        }
+                      }}
+                    >
+                      <Icon name="trash" size={20} color={WHITE} />
+                    </Pressable>
+                  )}
+                </View>
+              );
+            })}
 
-          <Pressable
-            style={{
-              marginBottom: scale(20),
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-            onPress={() => append({ degree: '', image: null })}
-          >
-            <FAIcon name="plus-circle" size={20} color={BLACK} />
-            <Text style={{ marginLeft: scale(10) }}>Add another degree</Text>
-          </Pressable>
+            <Pressable
+              style={{
+                marginBottom: scale(20),
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+              onPress={() => append({ degree: '', image: null })}
+            >
+              <FAIcon name="plus-circle" size={20} color={BLACK} />
+              <Text style={{ marginLeft: scale(10) }}>Add another degree</Text>
+            </Pressable>
 
-          {/* Days */}
-          <Text style={{ fontSize: scale(16), color: BLACK }}>
-            Availability
-          </Text>
-          <Text style={{ fontSize: scale(10), color: BLACK }}>
-            Select your days of availability
-          </Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-            {days.map((item, index) => (
-              <Pressable
-                key={index}
-                style={{
-                  backgroundColor: item.isSelected ? RED_COLOR : WHITE,
-                  borderWidth: 1,
-                  borderColor: RED_COLOR,
-                  borderRadius: scale(5),
-                  flexBasis: '12%',
-                  marginVertical: scale(5),
-                  marginHorizontal: scale(2),
-                  alignContent: 'center',
-                  justifyContent: 'center',
-                  paddingVertical: scale(3),
-                }}
-                onPress={() =>
-                  setDays(prev =>
-                    prev.map((d, i) =>
-                      i === index ? { ...d, isSelected: !d.isSelected } : d,
-                    ),
-                  )
-                }
-              >
-                <Text
+            {/* Days */}
+            <Text style={{ fontSize: scale(16), color: BLACK }}>
+              Availability
+            </Text>
+            <Text style={{ fontSize: scale(10), color: BLACK }}>
+              Select your days of availability
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+              {days.map((item, index) => (
+                <Pressable
+                  key={index}
                   style={{
-                    color: item.isSelected ? WHITE : BLACK,
-                    textAlign: 'center',
-                    fontSize: scale(10),
+                    backgroundColor: item.isSelected ? RED_COLOR : WHITE,
+                    borderWidth: 1,
+                    borderColor: RED_COLOR,
+                    borderRadius: scale(5),
+                    flexBasis: '12%',
+                    marginVertical: scale(5),
+                    marginHorizontal: scale(2),
+                    alignContent: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: scale(3),
                   }}
+                  onPress={() =>
+                    setDays(prev =>
+                      prev.map((d, i) =>
+                        i === index ? { ...d, isSelected: !d.isSelected } : d,
+                      ),
+                    )
+                  }
                 >
-                  {item.name}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+                  <Text
+                    style={{
+                      color: item.isSelected ? WHITE : BLACK,
+                      textAlign: 'center',
+                      fontSize: scale(10),
+                    }}
+                  >
+                    {item.name}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
 
-          {/* Time */}
-          <Text
-            style={{
-              fontSize: scale(10),
-              color: BLACK,
-              marginVertical: scale(8),
-            }}
-          >
-            Select your Available slots
-          </Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-            {time.map((item, index) => (
-              <Pressable
-                key={index}
-                style={{
-                  backgroundColor: item.isSelected ? RED_COLOR : WHITE,
-                  borderWidth: 1,
-                  borderColor: RED_COLOR,
-                  borderRadius: scale(5),
-                  flexBasis: '20%',
-                  marginVertical: scale(2),
-                  marginHorizontal: scale(4),
-                  alignContent: 'center',
-                  justifyContent: 'center',
-                  paddingVertical: scale(3),
-                }}
-                onPress={() =>
-                  setTime(prev =>
-                    prev.map((t, i) =>
-                      i === index ? { ...t, isSelected: !t.isSelected } : t,
-                    ),
-                  )
-                }
-              >
-                <Text
+            {/* Time */}
+            <Text
+              style={{
+                fontSize: scale(10),
+                color: BLACK,
+                marginVertical: scale(8),
+              }}
+            >
+              Select your Available slots
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+              {time.map((item, index) => (
+                <Pressable
+                  key={index}
                   style={{
-                    color: item.isSelected ? WHITE : BLACK,
-                    textAlign: 'center',
-                    fontSize: scale(10),
+                    backgroundColor: item.isSelected ? RED_COLOR : WHITE,
+                    borderWidth: 1,
+                    borderColor: RED_COLOR,
+                    borderRadius: scale(5),
+                    flexBasis: '20%',
+                    marginVertical: scale(2),
+                    marginHorizontal: scale(4),
+                    alignContent: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: scale(3),
                   }}
+                  onPress={() =>
+                    setTime(prev =>
+                      prev.map((t, i) =>
+                        i === index ? { ...t, isSelected: !t.isSelected } : t,
+                      ),
+                    )
+                  }
                 >
-                  {item.name}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+                  <Text
+                    style={{
+                      color: item.isSelected ? WHITE : BLACK,
+                      textAlign: 'center',
+                      fontSize: scale(10),
+                    }}
+                  >
+                    {item.name}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
 
-          {/* Submit Button */}
-          <Pressable
-            style={[
-              GlobalStyle.filedButton,
-              { position: 'absolute', bottom: scale(20) },
-            ]}
-            onPress={handleSubmit(editProfile)}
-            // onPress={fillSlots}
-          >
-            {loading ? (
-              <ActivityIndicator size={'small'} color={WHITE} />
-            ) : (
-              <Text style={GlobalStyle.filedButtonText}>Submit</Text>
-            )}
-          </Pressable>
-          <View style={{ height: scale(100) }} />
-        </ScrollView>
-      </View>
+            {/* Submit Button */}
+            <Pressable
+              style={[
+                GlobalStyle.filedButton,
+                { position: 'absolute', bottom: scale(20) },
+              ]}
+              onPress={handleSubmit(editProfile)}
+              // onPress={fillSlots}
+            >
+              {loading ? (
+                <ActivityIndicator size={'small'} color={WHITE} />
+              ) : (
+                <Text style={GlobalStyle.filedButtonText}>Submit</Text>
+              )}
+            </Pressable>
+            <View style={{ height: scale(100) }} />
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

@@ -29,6 +29,7 @@ import { config } from '../../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
+import CustomModal from '../../components/modal';
 
 // type Props = NativeStackScreenProps<HomeStackScreenType, 'MainHomeScreen'> ;
 type HomeStack = DrawerScreenProps<DrawerParamList, 'RescheduleAppointment'>;
@@ -37,12 +38,13 @@ type Props = HomeStack;
 
 const RescheduleAppointment = ({ navigation, route }: Props) => {
   const { params } = route;
-  const user = useSelector((state : RootState) => state?.auth?.user)
+  const user = useSelector((state: RootState) => state?.auth?.user);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMonth, setSelectedMonth] = useState(selectedDate.getMonth());
   const [selectedYear, setSelectedYear] = useState(selectedDate.getFullYear());
   const reson = useInputState();
   const [loading, setLoading] = useState(false);
+  const [modal, showModal] = useState(false);
   const months = [
     'January',
     'February',
@@ -134,7 +136,6 @@ const RescheduleAppointment = ({ navigation, route }: Props) => {
   const reschedule = async () => {
     setLoading(true);
     try {
-
       const formdata = new FormData();
       formdata?.append('enquiryCode', params?.enquiryCode);
       formdata?.append(
@@ -165,6 +166,7 @@ const RescheduleAppointment = ({ navigation, route }: Props) => {
       );
       if (res?.data?.status) {
         console.log('Appointment reschedules successfully', res?.data?.data);
+        showModal(true);
       } else {
         console.log('Appointment reschedule failed', res?.data?.data?.message);
       }
@@ -176,46 +178,128 @@ const RescheduleAppointment = ({ navigation, route }: Props) => {
   };
   return (
     <SafeAreaView style={styles.mainContainer}>
-      <AllHeader
-        navigate={() => navigation.navigate('Help')}
-        back={() => navigation.goBack()}
-        title={'Reschedule Appointment'}
-      />
-      <View style={styles.container}>
-        <Appointment
-          joinNav={undefined}
-          reshceduleNav={undefined}
-          {...params}
-          showButton={false}
-          review={null}
+      {modal ? (
+        <CustomModal
+          show={modal}
+          setShow={showModal}
+          title="Rescheduled Successfully"
+          text="The appointment has been rescheduled successfully. Patient will be notified about the new date and timings."
+          buttonText="Back to Home"
+          type="reschedule"
+          navigation={navigation}
         />
+      ) : (
+        <>
+          <AllHeader
+            navigate={() => navigation.navigate('Help')}
+            back={() => navigation.goBack()}
+            title={'Reschedule Appointment'}
+          />
+          <View style={styles.container}>
+            <Appointment
+              joinNav={undefined}
+              reshceduleNav={undefined}
+              {...params}
+              showButton={false}
+              review={null}
+            />
 
-        <ScrollView style={{ marginTop: scale(10) }}>
-          <View
-            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-          >
-            <Text
-              style={{
-                color: BLACK,
-                fontSize: scale(16),
-                marginVertical: scale(10),
-              }}
-            >
-              Select Date
-            </Text>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <Pressable
-                style={{ padding: scale(10) }}
-                onPress={handlePreviousMonth}
+            <ScrollView style={{ marginTop: scale(10) }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}
               >
-                <Icon name="arrow-left" size={20} color={BLACK} />
-              </Pressable>
+                <Text
+                  style={{
+                    color: BLACK,
+                    fontSize: scale(16),
+                    marginVertical: scale(10),
+                  }}
+                >
+                  Select Date
+                </Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Pressable
+                    style={{ padding: scale(10) }}
+                    onPress={handlePreviousMonth}
+                  >
+                    <Icon name="arrow-left" size={20} color={BLACK} />
+                  </Pressable>
+                  <Text
+                    style={{
+                      color: BLACK,
+                      fontSize: scale(16),
+                      marginVertical: scale(10),
+                    }}
+                  >
+                    {months[selectedMonth]}
+                  </Text>
+                  <Pressable
+                    style={{ padding: scale(10) }}
+                    onPress={handleNextMonth}
+                  >
+                    <Icon name="arrow-right" size={20} color={BLACK} />
+                  </Pressable>
+                </View>
+              </View>
+              <ScrollView horizontal>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    height: scale(50),
+                  }}
+                >
+                  {dayslist?.map((d, i) => (
+                    <Pressable
+                      onPress={() =>
+                        setDays(prev =>
+                          prev?.map((p, ind) =>
+                            i === ind
+                              ? { ...p, selected: !p.selected }
+                              : { ...p, selected: false },
+                          ),
+                        )
+                      }
+                      key={i}
+                      style={{
+                        backgroundColor: d.selected ? RED_COLOR : WHITE_10,
+                        flexDirection: 'column',
+                        borderWidth: 1,
+                        borderColor: BLACK,
+                        padding: scale(8),
+                        marginHorizontal: scale(10),
+                        borderRadius: scale(5),
+                      }}
+                    >
+                      <Text
+                        style={{
+                          textAlign: 'center',
+                          color: d.selected ? WHITE : BLACK,
+                        }}
+                      >
+                        {d.date}
+                      </Text>
+                      <Text
+                        style={{
+                          textAlign: 'center',
+                          color: d.selected ? WHITE : BLACK,
+                        }}
+                      >
+                        {' '}
+                        {d.day}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </ScrollView>
               <Text
                 style={{
                   color: BLACK,
@@ -223,147 +307,82 @@ const RescheduleAppointment = ({ navigation, route }: Props) => {
                   marginVertical: scale(10),
                 }}
               >
-                {months[selectedMonth]}
+                Select Time Slot
               </Text>
-              <Pressable
-                style={{ padding: scale(10) }}
-                onPress={handleNextMonth}
-              >
-                <Icon name="arrow-right" size={20} color={BLACK} />
-              </Pressable>
-            </View>
-          </View>
-          <ScrollView horizontal>
-            <View
-              style={{
-                flexDirection: 'row',
-                height: scale(50),
-              }}
-            >
-              {dayslist?.map((d, i) => (
-                <Pressable
-                  onPress={() =>
-                    setDays(prev =>
-                      prev?.map((p, ind) =>
-                        i === ind
-                          ? { ...p, selected: !p.selected }
-                          : { ...p, selected: false },
-                      ),
-                    )
-                  }
-                  key={i}
-                  style={{
-                    backgroundColor: d.selected ? RED_COLOR : WHITE_10,
-                    flexDirection: 'column',
-                    borderWidth: 1,
-                    borderColor: BLACK,
-                    padding: scale(8),
-                    marginHorizontal: scale(10),
-                    borderRadius: scale(5),
-                  }}
-                >
-                  <Text
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                {timeslot.map((time, i) => (
+                  <Pressable
                     style={{
-                      textAlign: 'center',
-                      color: d.selected ? WHITE : BLACK,
+                      borderWidth: 1,
+                      borderColor: time.selected ? 'transparent' : BLACK,
+                      borderRadius: scale(5),
+                      flexBasis: '30%',
+                      paddingHorizontal: scale(5),
+                      paddingVertical: scale(4),
+                      marginHorizontal: scale(3),
+                      marginVertical: scale(2),
+                      backgroundColor: time.selected ? RED_COLOR : WHITE_10,
                     }}
+                    onPress={() =>
+                      setTimeSlot(prev =>
+                        prev.map((p, ind) =>
+                          i === ind
+                            ? { ...p, selected: !p.selected }
+                            : { ...p, selected: false },
+                        ),
+                      )
+                    }
                   >
-                    {d.date}
-                  </Text>
-                  <Text
-                    style={{
-                      textAlign: 'center',
-                      color: d.selected ? WHITE : BLACK,
-                    }}
-                  >
-                    {' '}
-                    {d.day}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </ScrollView>
-          <Text
-            style={{
-              color: BLACK,
-              fontSize: scale(16),
-              marginVertical: scale(10),
-            }}
-          >
-            Select Time Slot
-          </Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-            {timeslot.map((time, i) => (
-              <Pressable
+                    <Text
+                      style={{
+                        color: time.selected ? WHITE : BLACK,
+                        fontSize: scale(8),
+                      }}
+                    >
+                      {time.time}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+              <Text
                 style={{
-                  borderWidth: 1,
-                  borderColor: time.selected ? 'transparent' : BLACK,
-                  borderRadius: scale(5),
-                  flexBasis: '30%',
-                  paddingHorizontal: scale(5),
-                  paddingVertical: scale(4),
-                  marginHorizontal: scale(3),
-                  marginVertical: scale(2),
-                  backgroundColor: time.selected ? RED_COLOR : WHITE_10,
+                  color: BLACK,
+                  fontSize: scale(16),
+                  marginVertical: scale(10),
                 }}
-                onPress={() =>
-                  setTimeSlot(prev =>
-                    prev.map((p, ind) =>
-                      i === ind
-                        ? { ...p, selected: !p.selected }
-                        : { ...p, selected: false },
-                    ),
-                  )
-                }
               >
-                <Text
-                  style={{
-                    color: time.selected ? WHITE : BLACK,
-                    fontSize: scale(8),
-                  }}
-                >
-                  {time.time}
-                </Text>
-              </Pressable>
-            ))}
+                Reason for rescheduling the appointment
+              </Text>
+              <Input
+                placeholder="Please type a reason"
+                inputState={reson}
+                label={null}
+                multiline={true}
+                numberOfLines={3}
+                inputStyle={{ height: scale(70) }}
+                textAlignVertical="top"
+              />
+            </ScrollView>
           </View>
-          <Text
-            style={{
-              color: BLACK,
-              fontSize: scale(16),
-              marginVertical: scale(10),
-            }}
+          <Pressable
+            onPress={reschedule}
+            style={[
+              GlobalStyle.filedButton,
+              {
+                bottom: scale(20),
+              },
+            ]}
           >
-            Reason for rescheduling the appointment
-          </Text>
-          <Input
-            placeholder="Please type a reason"
-            inputState={reson}
-            label={null}
-            multiline={true}
-            numberOfLines={3}
-            inputStyle={{ height: scale(70) }}
-            textAlignVertical="top"
-          />
-        </ScrollView>
-      </View>
-      <Pressable
-        onPress={reschedule}
-        style={[
-          GlobalStyle.filedButton,
-          {
-            bottom: scale(20),
-          },
-        ]}
-      >
-        {loading ? (
-          <ActivityIndicator size={'small'} color={WHITE} />
-        ) : (
-          <Text style={GlobalStyle.filedButtonText}>
-            Reschedule Appointment
-          </Text>
-        )}
-      </Pressable>
+            {loading ? (
+              <ActivityIndicator size={'small'} color={WHITE} />
+            ) : (
+              <Text style={GlobalStyle.filedButtonText}>
+                Reschedule Appointment
+              </Text>
+            )}
+          </Pressable>
+        </>
+      )}
     </SafeAreaView>
   );
 };

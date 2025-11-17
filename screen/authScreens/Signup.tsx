@@ -54,6 +54,7 @@ const SignupScreen = ({ navigation }: Props) => {
           'Content-Type': 'multipart/form-data',
         },
       });
+      console.log("response", res?.data?.data)
       if (res?.data?.status) {
         console.log('signup successfull', res?.data);
         const formattedUser = {
@@ -61,7 +62,7 @@ const SignupScreen = ({ navigation }: Props) => {
           id: res.data.data.userId,
           role: res.data.data.role,
           name: res.data.data.fullName,
-          email: res.data.data.email,
+          email: res.data.data.email ?? '',
           designation: res.data.data.designation,
           number: res.data.data.number,
         };
