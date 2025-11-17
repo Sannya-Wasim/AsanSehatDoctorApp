@@ -35,6 +35,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import axios from 'axios';
 import { config } from '../../config';
+import { RootState } from '../../store';
+import { useSelector } from 'react-redux';
 
 type Props = DrawerScreenProps<DrawerParamList, 'EditProfile'>;
 
@@ -52,6 +54,7 @@ type FormValues = {
 
 const EditProfile = ({ navigation }: any) => {
   const [loading, setLoading] = useState(false);
+  const user = useSelector((state : RootState) => state?.auth?.user)
   const {
     control,
     handleSubmit,
@@ -161,9 +164,8 @@ const EditProfile = ({ navigation }: any) => {
   const editProfile = async (data: FormValues) => {
     setLoading(true);
     try {
-      const userId = await AsyncStorage.getItem('userId');
       console.log('data', data);
-      const formData = fillProfile({ ...data, userId: userId ?? '3785' });
+      const formData = fillProfile({ ...data, userId: user?.id });
       console.log('Form data', formData);
 
       const res = await axios?.post(

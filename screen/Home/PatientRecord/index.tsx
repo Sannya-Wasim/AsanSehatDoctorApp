@@ -17,12 +17,15 @@ import axios from 'axios';
 import { config } from '../../../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RecordCard from './components/record';
+import { RootState } from '../../../store';
+import { useSelector } from 'react-redux';
 
 type HomeStack = DrawerScreenProps<DrawerParamList, 'Appointments'>;
 
 type Props = HomeStack;
 
 const PatientRecord = ({ navigation }: Props) => {
+  const user = useSelector((state : RootState) => state?.auth?.user)
   const [toggle, setToggle] = useState<'reports' | 'prescriptions'>(
     'prescriptions',
   );
@@ -33,7 +36,6 @@ const PatientRecord = ({ navigation }: Props) => {
   const fetchFollowups = async () => {
     setLoading(true);
     try {
-      const token = await AsyncStorage?.getItem('token');
       const formdata = new FormData();
       formdata?.append('patientId', '112');
       const res = await axios?.post(
@@ -42,7 +44,7 @@ const PatientRecord = ({ navigation }: Props) => {
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            Authorization: `${token}`,
+            Authorization: `${user?.token}`,
           },
         },
       );

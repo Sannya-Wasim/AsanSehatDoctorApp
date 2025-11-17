@@ -31,14 +31,17 @@ import Icon from 'react-native-vector-icons/Feather';
 import { config } from '../../config';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
+import { setDetails } from '../../store/reducer/authReducer';
 
 type Props = NativeStackScreenProps<AuthStackType, 'Signup'>;
 
 const SignupScreen = ({ navigation }: Props) => {
   const name = useInputState('');
   const contact = useInputState('');
+  const dispatch = useDispatch();
 
-  const press = () => navigation?.navigate('OTPScreen')
+  const press = () => navigation?.navigate('OTPScreen');
 
   const signup = async () => {
     try {
@@ -46,36 +49,40 @@ const SignupScreen = ({ navigation }: Props) => {
       formData?.append('name', name?.value);
       formData?.append('number', contact?.value);
       console.log('signup request obj', formData);
-      const signupRes = await axios.post(
-        `${config?.baseUrl}/signup`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
+      const res = await axios.post(`${config?.baseUrl}/signup`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
         },
-      );
-      if (signupRes?.data?.status) {
-        console.log('signup successfull', signupRes?.data);
-        AsyncStorage?.setItem('userId', signupRes?.data?.data?.userId);
-        AsyncStorage?.setItem('token', signupRes?.data?.token);
-        press()
+      });
+      if (res?.data?.status) {
+        console.log('signup successfull', res?.data);
+        const formattedUser = {
+          token: res.data.token,
+          id: res.data.data.userId,
+          role: res.data.data.role,
+          name: res.data.data.fullName,
+          email: res.data.data.email,
+          designation: res.data.data.designation,
+          number: res.data.data.number,
+        };
+
+        dispatch(setDetails(formattedUser));
+        press();
       } else {
-        console.log('Signup failed', signupRes?.data?.message);
+        console.log('Signup failed', res?.data?.message);
       }
     } catch (error) {
       console.log('Error signing up', error);
     }
   };
 
-
   return (
     <SafeAreaView style={styles.mainContainer}>
       <KeyboardAvoidingView
         behavior={Platform?.OS === 'ios' ? 'padding' : 'height'}
         style={{
-            flex : 1,
-            justifyContent : 'center'
+          flex: 1,
+          justifyContent: 'center',
         }}
       >
         <View style={styles.skipButtonContainer}>

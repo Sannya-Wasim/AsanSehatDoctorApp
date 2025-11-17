@@ -27,6 +27,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
 import { config } from '../../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { RootState } from '../../store';
+import { useSelector } from 'react-redux';
 
 // type Props = NativeStackScreenProps<HomeStackScreenType, 'MainHomeScreen'> ;
 type HomeStack = DrawerScreenProps<DrawerParamList, 'RescheduleAppointment'>;
@@ -35,6 +37,7 @@ type Props = HomeStack;
 
 const RescheduleAppointment = ({ navigation, route }: Props) => {
   const { params } = route;
+  const user = useSelector((state : RootState) => state?.auth?.user)
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMonth, setSelectedMonth] = useState(selectedDate.getMonth());
   const [selectedYear, setSelectedYear] = useState(selectedDate.getFullYear());
@@ -131,7 +134,6 @@ const RescheduleAppointment = ({ navigation, route }: Props) => {
   const reschedule = async () => {
     setLoading(true);
     try {
-      const token = await AsyncStorage?.getItem('token');
 
       const formdata = new FormData();
       formdata?.append('enquiryCode', params?.enquiryCode);
@@ -157,7 +159,7 @@ const RescheduleAppointment = ({ navigation, route }: Props) => {
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            Authorization: `${token}`,
+            Authorization: `${user?.token}`,
           },
         },
       );

@@ -27,6 +27,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { config } from '../../config';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 type Props = DrawerScreenProps<DrawerParamList, 'Home'>;
 
@@ -34,21 +36,20 @@ const HomeScreen = ({ navigation }: Props) => {
   const toggleDrawer = () => navigation.dispatch(DrawerActions.toggleDrawer());
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
+  const user = useSelector((state : RootState) => state?.auth?.user)
 
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const userId = await AsyncStorage.getItem('userId');
-      const token = await AsyncStorage.getItem('token');
       const formdata = new FormData();
-      formdata.append('doctorId', userId);
+      formdata.append('doctorId', user?.id);
       const res = await axios?.post(
         `${config?.baseUrl}/doctors/doctorAppointments`,
         formdata,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            Authorization: `${token}`,
+            'Authorization': `${user?.token}`,
           },
         },
       );
@@ -93,10 +94,10 @@ const HomeScreen = ({ navigation }: Props) => {
             <Text
               style={{ color: WHITE, fontSize: scale(16), fontWeight: 'bold' }}
             >
-              Dr. Nadeem Ahmed
+              {user?.name}
             </Text>
             <Text style={{ color: WHITE, fontSize: scale(14) }}>
-              General Physician
+              {user?.designation}
             </Text>
             <Text
               style={{

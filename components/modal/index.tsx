@@ -3,6 +3,8 @@ import { scale } from 'react-native-size-matters';
 import Icon from 'react-native-vector-icons/Feather';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BLACK, WHITE } from '../../util/color';
+import { useDispatch } from 'react-redux';
+import { setDetails } from '../../store/reducer/authReducer';
 
 interface CustomModalProps {
   show: boolean;
@@ -23,11 +25,22 @@ const CustomModal = ({
   text,
   buttonText
 }: CustomModalProps) => {
+  const dispatch = useDispatch()
   const press = async () => {
     if (type === 'auth') {
       try {
         setShow(false);
-        await AsyncStorage.clear();
+        // await AsyncStorage.clear();
+        const formattedUser = {
+          token: '',
+          id: '',
+          role: '',
+          name: '',
+          email: '',
+          designation: '',
+          number: '',
+        };
+        dispatch(setDetails(formattedUser))
         navigation.replace('Login');
       } catch (error) {
         console.error('Failed to clear AsyncStorage:', error);

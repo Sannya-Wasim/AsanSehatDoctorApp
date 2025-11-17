@@ -26,10 +26,9 @@ import {
 } from '@react-navigation/native-stack';
 import { AuthStackType } from '../../navigations/authNavigation';
 import { useAppDispatch } from '../../store/hook';
-import { setSigin } from '../../store/reducer/authReducer';
+import { setDetails, setSigin } from '../../store/reducer/authReducer';
 import { config } from '../../config';
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 type Props = NativeStackScreenProps<AuthStackType, 'Login'>;
 
 const LoginScreen = ({ navigation }: Props) => {
@@ -101,12 +100,25 @@ const LoginScreen = ({ navigation }: Props) => {
       });
       if (res?.data?.status) {
         console.log('Logged in successfully', res?.data);
-        AsyncStorage?.setItem('userId', res?.data?.data?.userId);
-        AsyncStorage?.setItem('token', res?.data?.token);
-        await AsyncStorage?.setItem('isLogin', 'true')
+        console.log('res?.data?.data', res?.data?.data);
+        const formattedUser = {
+          token: res.data.token,
+          id: res.data.data.userId,
+          role: res.data.data.role,
+          name: res.data.data.fullName,
+          email: res.data.data.email,
+          designation: res.data.data.designation,
+          number: res.data.data.number,
+        };
+
+        dispatch(setDetails(formattedUser));
         dispatch(setSigin(true));
       } else {
         console.log('Login failed', res?.data?.message);
+        ToastAndroid?.show(
+          `Login failed: ${res?.data?.message}`,
+          ToastAndroid?.TOP,
+        );
       }
     } catch (error) {
       console.log('Error loggging in', error);
@@ -150,13 +162,15 @@ const LoginScreen = ({ navigation }: Props) => {
               <Text style={styles.forgotButtonText}>Forgot Password?</Text>
             </Pressable>
           </View>
-          {loading ? (
-            <ActivityIndicator size={'small'} color={WHITE}/>
-          ) : (
-            <Pressable style={GlobalStyle.filedButton} onPress={() => login()}>
+
+          <Pressable style={GlobalStyle.filedButton} onPress={() => login()}>
+            {loading ? (
+              <ActivityIndicator size={'small'} color={WHITE} />
+            ) : (
               <Text style={GlobalStyle.filedButtonText}>Log In</Text>
-            </Pressable>
-          )}
+            )}
+          </Pressable>
+
           <View style={styles.signupContainer}>
             <Pressable
               style={styles.signupButton}

@@ -21,6 +21,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { config } from '../../../../config';
 import { ScrollView } from 'react-native-gesture-handler';
+import { RootState } from '../../../../store';
+import { useSelector } from 'react-redux';
 
 type IFormInput = {
   symptoms: string;
@@ -46,6 +48,7 @@ const Prescription = ({
   patientId: string;
   setModal : Function
 }) => {
+  const user = useSelector((state : RootState) => state?.auth?.user)
   const [calendar, setCalendar] = useState(false);
   const [loading, setLoading] = useState(false);
   const {
@@ -109,12 +112,10 @@ const Prescription = ({
     console.log('data', data);
     try {
       const cleaned = data.prescriptions.map(({ id, ...rest }) => rest);
-      const userid = await AsyncStorage?.getItem('userId');
-      const token = await AsyncStorage?.getItem('token');
       const finalData = {
         ...data,
         prescriptions: cleaned,
-        userId: userid,
+        userId: user?.id,
       };
       // console.log('data', finalData);
       // console.log(
@@ -129,7 +130,7 @@ const Prescription = ({
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            'Authorization': `${token}`,
+            'Authorization': `${user?.token}`,
           },
         },
       );

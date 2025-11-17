@@ -24,17 +24,18 @@ import {
 } from '@react-navigation/native-stack';
 import OTPTextView from 'react-native-otp-textinput';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { RootState } from '../../store';
+import { useSelector } from 'react-redux';
 type Props = NativeStackScreenProps<AuthStackType, 'OTPScreen'>;
 
 const OTPScreen = ({ navigation }: Props) => {
   const phone = useInputState('');
   const name = useInputState('');
+  const user = useSelector((state : RootState) => state?.auth?.user)
 
   const press = async () => {
-    const userId = await AsyncStorage?.getItem('userId');
-    const token = await AsyncStorage?.getItem('token');
-    console.log('user id', userId);
-    console.log('token', token);
+    console.log('user id', user?.id);
+    console.log('token', user?.token);
     navigation.navigate('PasswordScreen')
   };
 

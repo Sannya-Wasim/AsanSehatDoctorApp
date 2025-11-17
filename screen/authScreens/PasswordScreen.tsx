@@ -30,9 +30,12 @@ import { useAppDispatch } from '../../store/hook';
 import axios from 'axios';
 import { config } from '../../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { RootState } from '../../store';
+import { useSelector } from 'react-redux';
 type Props = NativeStackScreenProps<AuthStackType, 'PasswordScreen'>;
 
 const PasswordScreen = ({ navigation }: Props) => {
+  const user = useSelector((state : RootState) => state?.auth?.user)
   const password = usePasswordInputState('');
   const confirmPassword = usePasswordInputState('');
   const [loading, setLoading] = useState(false);
@@ -45,9 +48,7 @@ const PasswordScreen = ({ navigation }: Props) => {
         }
       else if  (password?.value === confirmPassword?.value) {
         const formData = new FormData();
-        const userId = await AsyncStorage.getItem('userId');
-        const token = await AsyncStorage.getItem('token');
-        formData?.append('userId', userId);
+        formData?.append('userId', user?.id);
         formData?.append('password', password?.value);
         const res = await axios.post(
           `${config?.baseUrl}/login/setPassword`,
@@ -55,7 +56,7 @@ const PasswordScreen = ({ navigation }: Props) => {
           {
             headers: {
               'Content-Type': 'multipart/form-data',
-              'Authorization': `${token}`,
+              'Authorization': `${user?.token}`,
             },
           },
         );
