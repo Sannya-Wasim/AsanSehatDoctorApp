@@ -5,6 +5,7 @@ import { BLACK, GRAY, WHITE, WHITE_10 } from '../util/color';
 import GlobalStyle from '../util/styles';
 import moment from 'moment';
 import Icon from 'react-native-vector-icons/Feather';
+import ProfileIcon from '../assets/svg/profileIcon';
 
 type Props = {
   patientId: string;
@@ -84,54 +85,83 @@ const Appointment = (props: Props) => {
         </View>
       </View>
       <View style={{ flexDirection: 'row' }}>
-        <Image
-          //   source={props.image}
-          source={require('../assets/png/doctorImage.png')}
-          style={{
-            height: scale(90),
-            width: scale(90),
-            borderRadius: scale(5),
-          }}
-        />
-        <View style={{ marginHorizontal: scale(10) }}>
+        {props?.profile_image ? (
+          <Image
+            //   source={props.image}
+            source={require('../assets/png/doctorImage.png')}
+            style={{
+              height: scale(90),
+              width: scale(90),
+              borderRadius: scale(5),
+            }}
+          />
+        ) : (
+          <View
+            style={{
+              width: scale(100),
+              height: scale(100),
+              backgroundColor: GRAY,
+              borderRadius: scale(5),
+              alignItems : "center",
+              justifyContent : "center"
+            }}
+          >
+            <ProfileIcon color={BLACK} height={scale(50)} width={scale(50)}/>
+          </View>
+        )}
+        <View style={{ marginHorizontal: scale(10), maxWidth : scale(180) }}>
           <Text
             style={{ fontWeight: 'bold', fontSize: scale(18), color: BLACK }}
           >
             {props.name}
           </Text>
           <View>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginVertical: scale(5),
-              }}
-            >
-              <Text style={{ color: BLACK, fontSize: scale(8) }}>
-                Symptoms:
-              </Text>
+            {props?.symptoms !== '' ? (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginVertical: scale(5),
+                }}
+              >
+                <Text style={{ color: BLACK, fontSize: scale(8) }}>
+                  Symptoms:
+                </Text>
 
-              <View style={{ flexDirection: 'row', marginLeft: scale(5) }}>
-                {['Fever', 'Cold', 'Flu'].map((item, index) => (
-                  <View
-                    key={index}
-                    style={{
-                      backgroundColor: 'rgba(18,88,161,0.3)',
-                      borderColor: '#1256A1',
-                      borderWidth: 1,
-                      marginHorizontal: scale(2),
-                      padding: scale(3),
-                      borderRadius: scale(5),
-                    }}
-                  >
-                    <Text style={{ color: BLACK, fontSize: scale(8) }}>
-                      {item}
-                    </Text>
-                  </View>
-                ))}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    marginLeft: scale(5),
+                    width: scale(150),
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  {props?.symptoms
+                    ?.split(',')
+                    ?.filter(item => item !== '')
+                    ?.map((item, index) => (
+                      <View
+                        key={index}
+                        style={{
+                          backgroundColor: 'rgba(18,88,161,0.3)',
+                          borderColor: '#1256A1',
+                          borderWidth: 1,
+                          margin: scale(2),
+                          padding: scale(3),
+                          borderRadius: scale(5),
+                        }}
+                      >
+                        <Text style={{ color: BLACK, fontSize: scale(8) }}>
+                          {item}
+                        </Text>
+                      </View>
+                    ))}
+                </View>
               </View>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+            ) : (
+              <Text>Symptoms not mentioned!</Text>
+            )}
+            {/* <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
               <Text style={{ color: BLACK, fontSize: scale(8) }}>
                 Condition:
               </Text>
@@ -148,7 +178,7 @@ const Appointment = (props: Props) => {
               >
                 {props.serviceRequest}
               </Text>
-            </View>
+            </View> */}
           </View>
         </View>
       </View>

@@ -6,7 +6,8 @@ import {
   Dimensions,
   Pressable,
   ScrollView,
-  SafeAreaView,
+  FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { ScaledSheet, scale } from 'react-native-size-matters';
 import { MainScreenHeader } from '../../components/header';
@@ -25,41 +26,17 @@ import Appointment from '../../components/apointments';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { config } from '../../config';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Props = DrawerScreenProps<DrawerParamList, 'Home'>;
 
 const HomeScreen = ({ navigation }: Props) => {
   const toggleDrawer = () => navigation.dispatch(DrawerActions.toggleDrawer());
   const [appointments, setAppointments] = useState([]);
-  const [Upcoming, setUpcoming] = useState(
-    Array.from(Array(3), (_, x) => ({
-      patientId: '213',
-      enquiryCode: '7b315e12e6134b92',
-      doctorId: '106',
-      lhvCmwNurseId: '182',
-      marviId: '197',
-      appointmentDate: '2025-11-12',
-      appointmentTime: '12:30:00',
-      serviceRequest:
-        'Fever,Fever with skin rashes,Headache,Hypertension,Maternal care,Family planning,Immunization,Diabetes care',
-      enquiryType: 'Lab Services',
-      cctype: 'Video Consultation + Ultrasound (Rural)',
-      paid: '213',
-      pidd: '32913',
-      operator: 'System',
-      doctor: 'Dr.Fouzia Farah',
-      name: 'Muhammad Naveed',
-      age: '40',
-      gender: 'Male',
-      cnic: '',
-      address: 'Karachi Malir C/O Thatta',
-      status_class_name: 'label label-warning',
-      statusName: 'Confirmed',
-      statusId: '2',
-    })),
-  );
+  const [loading, setLoading] = useState(false);
 
   const fetchAppointments = async () => {
+    setLoading(true);
     try {
       const userId = await AsyncStorage.getItem('userId');
       const token = await AsyncStorage.getItem('token');
@@ -86,28 +63,15 @@ const HomeScreen = ({ navigation }: Props) => {
       }
     } catch (error) {
       console.log('Error fetching appointments', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchAppointments();
   }, []);
-  const [Previous, setPrevious] = useState(
-    Array.from(Array(100), (_, x) => ({
-      id: x + 1,
-      name: 'Zain Bawa',
-      image: require('../../assets/png/doctorImage.png'),
-      symptoms: ['Fever', 'Cold', 'Cough'],
-      condition:
-        'Lorem ipsum dolor sit amet consectetur. Tellus posuere eget nunc gravida amet et placerat. Adipiscing vel quis sem et. Nisl.',
-      date: new Date().toLocaleDateString(),
-      time: new Date().toLocaleTimeString(),
-      rating: '4.5',
-      review:
-        'Dr. Ahmed is an exceptional physician. He listens attentively to all my concerns and provides a clear explanation of my health issues. His caring and empathetic approach make me feel genuinely cared for.',
-      showButton: false,
-    })),
-  );
+
   return (
     <SafeAreaView style={styles.mainContainer}>
       <MainScreenHeader
@@ -277,33 +241,49 @@ const HomeScreen = ({ navigation }: Props) => {
             </Text>
           </View>
         </View>
-        <ScrollView style={{ marginTop: scale(10) }}>
-          <Text style={{ fontSize: scale(16), color: BLACK }}>
-            Upcoming Appointments
-          </Text>
-          {Upcoming.map((item, index) => (
-            <Appointment
-              key={index}
-              reshceduleNav={() =>
-                navigation.navigate('RescheduleAppointment', item)
-              }
-              joinNav={() => navigation.navigate('JoinAppointment', item)}
-            showButton={true}
-              {...item}
+        {appointments?.length > 0 ? (
+          <>
+            <Text style={{ fontSize: scale(16), color: BLACK }}>
+              Upcoming Appointments
+            </Text>
+            <FlatList
+              data={appointments}
+              renderItem={({ item, index }) => {
+                return (
+                  <Appointment
+                    key={index}
+                    reshceduleNav={() =>
+                      navigation.navigate('RescheduleAppointment', item)
+                    }
+                    joinNav={() => navigation.navigate('JoinAppointment', item)}
+                    showButton={true}
+                    {...item}
+                  />
+                );
+              }}
+              style={{
+                // marginBottom : scale(150)
+                maxHeight: Dimensions?.get('screen')?.height * 0.45,
+              }}
             />
-          ))}
-          {/* <Text style={{ fontSize: scale(16), color: BLACK }}>Previous Appointments</Text>
-                    {Previous.map((item, index) => (
-                        <Appointment
-                            key={item.id}
-                            reshceduleNav={() => navigation.navigate('RescheduleAppointment', item)}
-                            joinNav={() => navigation.navigate('JoinAppointment', item)}
-                            {...item}
-                            
-                        />
-                    ))} */}
-          <View style={{ height: scale(300) }} />
-        </ScrollView>
+          </>
+        ) : loading ? (
+          <ActivityIndicator size={'small'} color={RED_COLOR} />
+        ) : (
+          <View
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'red',
+              flexGrow: 1,
+            }}
+          >
+            <Text style={{ color: BLACK, fontSize: scale(20) }}>
+              No appointments yet!
+            </Text>
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -313,12 +293,12 @@ export default HomeScreen;
 
 const styles = ScaledSheet.create({
   mainContainer: {
-    // flex: 1,
+    flex: 1,
     backgroundColor: '#fff',
     height: Dimensions.get('screen').height,
     // justifyContent: 'center',
     // alignContent: 'center',
-    // alignItems: 'center',
+    alignItems: 'center',
   },
   container: {
     width: '90%',
