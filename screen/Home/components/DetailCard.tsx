@@ -8,6 +8,7 @@ import { RED_COLOR, WHITE, BLACK } from '../../../util/color';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
+import Icons from './Icons';
 
 const DetailCard = () => {
   const [loading, setLoading] = useState(false);
@@ -64,67 +65,7 @@ const DetailCard = () => {
           </View>
 
           {/* Icons */}
-          <View style={styles.iconRow}>
-            <View style={styles.iconWrapper}>
-              <View
-                style={[
-                  styles.iconCircle,
-                  { backgroundColor: 'rgba(238,33,37,0.3)' },
-                ]}
-              >
-                <Icon name="video" size={scale(40)} color={RED_COLOR} />
-              </View>
-              <Text style={styles.iconValue}>Rs. 400</Text>
-              <Text style={styles.iconLabel}>Fees</Text>
-            </View>
-
-            <View style={styles.iconWrapper}>
-              <View
-                style={[
-                  styles.iconCircle,
-                  { backgroundColor: 'rgba(11,149,122,0.3)' },
-                ]}
-              >
-                <Icon name="award" size={scale(40)} color={'#0B957A'} />
-              </View>
-              <Text style={styles.iconValue}>12 Years</Text>
-              <Text style={styles.iconLabel}>Experience</Text>
-            </View>
-
-            <View style={styles.iconWrapper}>
-              <View
-                style={[
-                  styles.iconCircle,
-                  { backgroundColor: 'rgba(233,133,3,0.3)' },
-                ]}
-              >
-                <MaterialIcon
-                  name="insert-emoticon"
-                  size={scale(40)}
-                  color={'#0D5495'}
-                />
-              </View>
-              <Text style={styles.iconValue}>175+</Text>
-              <Text style={styles.iconLabel}>Patients</Text>
-            </View>
-
-            <View style={styles.iconWrapper}>
-              <View
-                style={[
-                  styles.iconCircle,
-                  { backgroundColor: 'rgba(18,86,161,0.3)' },
-                ]}
-              >
-                <MaterialIcon
-                  name="payments"
-                  size={scale(40)}
-                  color={'#0D5495'}
-                />
-              </View>
-              <Text style={styles.iconValue}>18,000</Text>
-              <Text style={styles.iconLabel}>Earnings</Text>
-            </View>
-          </View>
+          <Icons />
         </>
       )}
     </View>
@@ -135,7 +76,7 @@ export default DetailCard;
 
 const styles = ScaledSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
   },
   card: {
     backgroundColor: RED_COLOR,
