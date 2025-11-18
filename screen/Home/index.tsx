@@ -29,6 +29,9 @@ import { config } from '../../config';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
+import { useApi } from '../../methods/apiClient';
+import { endpoints } from '../../methods/endpoints';
+import DetailCard from './components/DetailCard';
 
 type Props = DrawerScreenProps<DrawerParamList, 'Home'>;
 
@@ -36,31 +39,20 @@ const HomeScreen = ({ navigation }: Props) => {
   const toggleDrawer = () => navigation.dispatch(DrawerActions.toggleDrawer());
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
-  const user = useSelector((state : RootState) => state?.auth?.user)
+  const user = useSelector((state: RootState) => state?.auth?.user);
+  const {POST} = useApi()
 
   const fetchAppointments = async () => {
     setLoading(true);
     try {
       const formdata = new FormData();
       formdata.append('doctorId', user?.id);
-      const res = await axios?.post(
-        `${config?.baseUrl}/doctors/doctorAppointments`,
-        formdata,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `${user?.token}`,
-          },
-        },
-      );
-      if (res?.data?.status) {
-        console.log(
-          'List of appointments fetched successfully',
-          res?.data?.data,
-        );
-        setAppointments(res?.data?.data);
+      const res = await POST(endpoints?.getAppointments, formdata);
+      if (res?.status) {
+        console.log('List of appointments fetched successfully', res?.data);
+        setAppointments(res?.data);
       } else {
-        console.log('Fetching appointments failed', res?.data?.message);
+        console.log('Fetching appointments failed', res?.message);
       }
     } catch (error) {
       console.log('Error fetching appointments', error);
@@ -80,171 +72,16 @@ const HomeScreen = ({ navigation }: Props) => {
         walletNav={() => navigation.navigate('Wallet')}
       />
       <View style={styles.container}>
-        <View
-          style={{
-            backgroundColor: RED_COLOR,
-            flexDirection: 'row',
-            height: scale(130),
-            padding: scale(5),
-            marginTop: scale(50),
-            borderRadius: scale(5),
-          }}
-        >
-          <View style={{ flexBasis: '60%', padding: scale(10) }}>
-            <Text
-              style={{ color: WHITE, fontSize: scale(16), fontWeight: 'bold' }}
-            >
-              {user?.name}
-            </Text>
-            <Text style={{ color: WHITE, fontSize: scale(14) }}>
-              {user?.designation}
-            </Text>
-            <Text
-              style={{
-                color: WHITE,
-                fontSize: scale(10),
-                marginVertical: scale(20),
-              }}
-            >
-              MBBS, Ph.D.
-            </Text>
-          </View>
-          <Image
-            source={require('../../assets/png/doctorImage.png')}
-            style={{
-              width: scale(135),
-              height: scale(153),
-              borderRadius: scale(5),
-              position: 'absolute',
-              bottom: scale(10),
-              right: scale(10),
-            }}
-          />
-        </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginTop: scale(20),
-          }}
-        >
-          <View style={{ flex: 1, marginHorizontal: scale(5) }}>
-            <View
-              style={{
-                backgroundColor: 'rgba(238,33,37,0.3)',
-                alignItems: 'center',
-                padding: scale(15),
-                borderRadius: scale(100),
-              }}
-            >
-              <Icon name="video" size={scale(40)} color={RED_COLOR} />
-            </View>
-            <Text
-              style={{
-                textAlign: 'center',
-                color: BLACK,
-                fontSize: scale(14),
-                fontWeight: 'bold',
-              }}
-            >
-              Rs. 400
-            </Text>
-            <Text
-              style={{ textAlign: 'center', color: BLACK, fontSize: scale(8) }}
-            >
-              Fees
-            </Text>
-          </View>
-          <View style={{ flex: 1, marginHorizontal: scale(5) }}>
-            <View
-              style={{
-                backgroundColor: 'rgba(11,149,122,0.3)',
-                alignItems: 'center',
-                padding: scale(15),
-                borderRadius: scale(100),
-              }}
-            >
-              <Icon name="award" size={scale(40)} color={'#0B957A'} />
-            </View>
-            <Text
-              style={{
-                textAlign: 'center',
-                color: BLACK,
-                fontSize: scale(14),
-                fontWeight: 'bold',
-              }}
-            >
-              12 Years
-            </Text>
-            <Text
-              style={{ textAlign: 'center', color: BLACK, fontSize: scale(8) }}
-            >
-              Experience
-            </Text>
-          </View>
-
-          <View style={{ flex: 1, marginHorizontal: scale(5) }}>
-            <View
-              style={{
-                backgroundColor: 'rgba(233,133,3,0.3)',
-                alignItems: 'center',
-                padding: scale(15),
-                borderRadius: scale(100),
-              }}
-            >
-              <MaterialIcon
-                name="insert-emoticon"
-                size={scale(40)}
-                color={'#0D5495'}
-              />
-            </View>
-            <Text
-              style={{
-                textAlign: 'center',
-                color: BLACK,
-                fontSize: scale(14),
-                fontWeight: 'bold',
-              }}
-            >
-              175+
-            </Text>
-            <Text
-              style={{ textAlign: 'center', color: BLACK, fontSize: scale(8) }}
-            >
-              Patients
-            </Text>
-          </View>
-          <View style={{ flex: 1, marginHorizontal: scale(5) }}>
-            <View
-              style={{
-                backgroundColor: 'rgba(18,86,161,0.3)',
-                alignItems: 'center',
-                padding: scale(15),
-                borderRadius: scale(100),
-              }}
-            >
-              <MaterialIcon name="payments" size={scale(40)} color={'#0D5495'} />
-            </View>
-            <Text
-              style={{
-                textAlign: 'center',
-                color: BLACK,
-                fontSize: scale(14),
-                fontWeight: 'bold',
-              }}
-            >
-              18,000
-            </Text>
-            <Text
-              style={{ textAlign: 'center', color: BLACK, fontSize: scale(8) }}
-            >
-              Earnings
-            </Text>
-          </View>
-        </View>
+        <DetailCard />
         {appointments?.length > 0 ? (
           <>
-            <Text style={{ fontSize: scale(16), color: BLACK, marginTop : scale(20) }}>
+            <Text
+              style={{
+                fontSize: scale(16),
+                color: BLACK,
+                marginTop: scale(20),
+              }}
+            >
               Upcoming Appointments
             </Text>
             <FlatList

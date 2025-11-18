@@ -30,6 +30,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
 import CustomModal from '../../components/modal';
+import { POST } from '../../methods/apiClient';
+import { endpoints } from '../../methods/endpoints';
 
 // type Props = NativeStackScreenProps<HomeStackScreenType, 'MainHomeScreen'> ;
 type HomeStack = DrawerScreenProps<DrawerParamList, 'RescheduleAppointment'>;
@@ -154,21 +156,12 @@ const RescheduleAppointment = ({ navigation, route }: Props) => {
         )[0]?.time,
       );
       formdata?.append('enquiryRemarks', reson?.value);
-      const res = await axios?.post(
-        `${config?.baseUrl}/doctors/rescheduleAppointment`,
-        formdata,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `${user?.token}`,
-          },
-        },
-      );
-      if (res?.data?.status) {
-        console.log('Appointment reschedules successfully', res?.data?.data);
+      const res = await POST(endpoints?.rescheduleAppointment, formdata)
+      if (res?.status) {
+        console.log('Appointment reschedules successfully', res?.data);
         showModal(true);
       } else {
-        console.log('Appointment reschedule failed', res?.data?.data?.message);
+        console.log('Appointment reschedule failed', res?.data?.message);
       }
     } catch (error) {
       console.log('Error rescheduling appointment', error);

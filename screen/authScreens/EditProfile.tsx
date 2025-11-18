@@ -40,6 +40,8 @@ import axios from 'axios';
 import { config } from '../../config';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
+import { POST } from '../../methods/apiClient';
+import { endpoints } from '../../methods/endpoints';
 
 type Props = DrawerScreenProps<DrawerParamList, 'EditProfile'>;
 
@@ -183,18 +185,13 @@ const EditProfile = ({ navigation }: any) => {
         formdata?.append(d?.value, d?.isSelected ? JSON?.stringify(selectedTimes) : 'off')
       });
       console.log("formdata", formdata)
-      const res = await axios?.post(`${config?.baseUrl}/doctors/clinicDateTimeUpdate`, formdata,{
-        headers : {
-          'Content-Type' : 'multipart/form-data',
-          'Authorization' : `${user?.token}`
-        }
-      })
-      if (res?.data?.status){
-        console.log('Clinic times updated successfully', res?.data?.data)
+      const res = await POST(endpoints?.clinicTimings, formdata)
+      if (res?.status){
+        console.log('Clinic times updated successfully', res?.data)
         navigation?.navigate('UploadPicture');
       } else {
-        console.log("Failed to update clinic times", res?.data?.message)
-        ToastAndroid?.show(`Failed to update clinic times: ${res?.data?.message}`, ToastAndroid?.TOP)
+        console.log("Failed to update clinic times", res?.message)
+        ToastAndroid?.show(`Failed to update clinic times: ${res?.message}`, ToastAndroid?.TOP)
       }
     } catch (error) {
       console.log('Error updating times', error);
@@ -208,23 +205,13 @@ const EditProfile = ({ navigation }: any) => {
       console.log('data', data);
       const formData = fillProfile({ ...data, userId: user?.id });
       console.log('Form data', formData);
-
-      const res = await axios?.post(
-        `${config?.baseUrl}/doctors/profileUpdate`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `${user?.token}`,
-          },
-        },
-      );
-      if (res?.data?.status) {
-        console.log('Profile updated successfully', res?.data);
+      const res = await POST(endpoints?.editProfile, formData)
+      if (res?.status) {
+        console.log('Profile updated successfully', res);
         await updateTimes()
       } else {
-        console.log('Profile update failed', res?.data?.message);
-        ToastAndroid?.show(`Failed to update profile: ${res?.data?.message}`, ToastAndroid?.TOP)
+        console.log('Profile update failed', res?.message);
+        ToastAndroid?.show(`Failed to update profile: ${res?.message}`, ToastAndroid?.TOP)
       }
     } catch (error) {
       console.log('Error updating profile', error);

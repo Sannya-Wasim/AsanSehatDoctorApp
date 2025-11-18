@@ -33,6 +33,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch } from 'react-redux';
 import { setDetails } from '../../store/reducer/authReducer';
+import { AUTH } from '../../methods/apiClient';
+import { endpoints } from '../../methods/endpoints';
 
 type Props = NativeStackScreenProps<AuthStackType, 'Signup'>;
 
@@ -49,28 +51,24 @@ const SignupScreen = ({ navigation }: Props) => {
       formData?.append('name', name?.value);
       formData?.append('number', contact?.value);
       console.log('signup request obj', formData);
-      const res = await axios.post(`${config?.baseUrl}/signup`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const res = await AUTH(endpoints?.signup, formData)
       console.log("response", res?.data?.data)
-      if (res?.data?.status) {
+      if (res?.status) {
         console.log('signup successfull', res?.data);
         const formattedUser = {
-          token: res.data.token,
-          id: res.data.data.userId,
-          role: res.data.data.role,
-          name: res.data.data.fullName,
-          email: res.data.data.email ?? '',
-          designation: res.data.data.designation,
-          number: res.data.data.number,
+          token: res.token,
+          id: res.data.userId,
+          role: res.data.role,
+          name: res.data.fullName,
+          email: res.data.email ?? '',
+          designation: res.data.designation,
+          number: res.data.number,
         };
 
         dispatch(setDetails(formattedUser));
         press();
       } else {
-        console.log('Signup failed', res?.data?.message);
+        console.log('Signup failed', res?.message);
       }
     } catch (error) {
       console.log('Error signing up', error);

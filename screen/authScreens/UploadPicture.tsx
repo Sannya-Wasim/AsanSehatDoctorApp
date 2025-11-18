@@ -19,6 +19,8 @@ import { config } from '../../config';
 import { DrawerScreenProps } from '@react-navigation/drawer';
 import { DrawerParamList } from '../../navigations/drawerNavigation';
 import CustomModal from '../../components/modal';
+import { POST } from '../../methods/apiClient';
+import { endpoints } from '../../methods/endpoints';
 
 type Props = DrawerScreenProps<DrawerParamList, 'EditProfile'>;
 
@@ -58,27 +60,18 @@ const UploadPicture = ({ navigation }: Props) => {
         ToastAndroid?.show('upload image first', ToastAndroid?.BOTTOM);
       }
 
-      //   const res = await axios?.post(
-      //     `${config?.baseUrl}/signup/updateProfileImage`,
-      //     formData,
-      //     {
-      //       headers: {
-      //         'Content-Type': 'multipart/form-data',
-      //         Authorization: `Bearer ${config?.token}`,
-      //       },
-      //     },
-      //   );
-      //   if (res?.data?.status) {
-      //     console.log('Profile image uploaded successfully', res?.data);
-      //   } else {
-      //     console.log('Profile image failed', res?.data?.message);
-      //   }
+        const res = await POST(endpoints?.uploadProfileImage, formData)
+        if (res?.status) {
+          console.log('Profile image uploaded successfully', res);
+        } else {
+          console.log('Profile image failed', res?.message);
+        }
     } catch (error) {
       console.log('Error updating profile image', error);
     }
-    // finally {
-    //   setLoading(false);
-    // }
+    finally {
+      setLoading(false);
+    }
   };
   return (
     <SafeAreaView style={styles?.container}>

@@ -23,6 +23,8 @@ import { config } from '../../../../config';
 import { ScrollView } from 'react-native-gesture-handler';
 import { RootState } from '../../../../store';
 import { useSelector } from 'react-redux';
+import { POST } from '../../../../methods/apiClient';
+import { endpoints } from '../../../../methods/endpoints';
 
 type IFormInput = {
   symptoms: string;
@@ -124,22 +126,13 @@ const Prescription = ({
       // );
       const formdata = fillForm(finalData);
       // console.log("formdata", formdata)
-      const res = await axios?.post(
-        `${config?.baseUrl}/doctors/addFollowup`,
-        formdata,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `${user?.token}`,
-          },
-        },
-      );
+      const res = await POST(endpoints?.addFollowup, formdata)
       console.log("res", res)
-      if (res?.data?.status) {
-        console.log('Prescription added successfully', res?.data?.data);
+      if (res?.status) {
+        console.log('Prescription added successfully', res?.data);
         setModal(true)
       } else {
-        console.log('Prescription addition failed', res?.data?.message);
+        console.log('Prescription addition failed', res?.message);
       }
     } catch (error) {
       console.log('Error adding prescription', error);

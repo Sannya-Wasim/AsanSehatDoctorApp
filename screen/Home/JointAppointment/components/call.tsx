@@ -15,12 +15,12 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import { scale, ScaledSheet } from 'react-native-size-matters';
 import { callStyles } from '../styles';
 
-const Call = ({ navigation, setShow }: any) => {
+const Call = ({ navigation, setShow, patientDetails}: any) => {
   const icons = [
     {
       id: 1,
       icon: <Icon name="clipboard" size={25} color={WHITE} />,
-        press : () => navigation?.navigate("PatientRecord")
+        press : () => navigation?.navigate("PatientRecord", {patientId : patientDetails?.patientId})
     },
     {
       id: 2,

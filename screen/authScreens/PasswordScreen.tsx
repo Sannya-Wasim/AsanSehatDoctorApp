@@ -32,6 +32,8 @@ import { config } from '../../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
+import { POST } from '../../methods/apiClient';
+import { endpoints } from '../../methods/endpoints';
 type Props = NativeStackScreenProps<AuthStackType, 'PasswordScreen'>;
 
 const PasswordScreen = ({ navigation }: Props) => {
@@ -50,21 +52,12 @@ const PasswordScreen = ({ navigation }: Props) => {
         const formData = new FormData();
         formData?.append('userId', user?.id);
         formData?.append('password', password?.value);
-        const res = await axios.post(
-          `${config?.baseUrl}/login/setPassword`,
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-              'Authorization': `${user?.token}`,
-            },
-          },
-        );
-        if (res?.data?.status) {
-          console.log('Password updated successfully', res?.data);
+        const res = await POST(endpoints?.setPassword, formData)
+        if (res?.status) {
+          console.log('Password updated successfully', res);
           navigation?.navigate('EditProfile')
         } else {
-          console.log('Password updation failed', res?.data?.message);
+          console.log('Password updation failed', res?.message);
         }
         navigation?.navigate('EditProfile')
       } else {

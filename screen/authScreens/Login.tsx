@@ -29,6 +29,8 @@ import { useAppDispatch } from '../../store/hook';
 import { setDetails, setSigin } from '../../store/reducer/authReducer';
 import { config } from '../../config';
 import axios from 'axios';
+import { useApi } from '../../methods/apiClient';
+import {endpoints} from '../../methods/endpoints'
 type Props = NativeStackScreenProps<AuthStackType, 'Login'>;
 
 const LoginScreen = ({ navigation }: Props) => {
@@ -36,6 +38,7 @@ const LoginScreen = ({ navigation }: Props) => {
   const password = usePasswordInputState('');
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
+  const {AUTH} = useApi()
 
   const validateEmailOrPhone = (input: string) => {
     if (!input) {
@@ -92,31 +95,26 @@ const LoginScreen = ({ navigation }: Props) => {
         formData.append('number', validated?.value);
       }
       formData?.append('password', password?.value);
-      const res = await axios.post(`${config?.baseUrl}/login/login`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          // "Authorization": `Bearer ${token}`
-        },
-      });
-      if (res?.data?.status) {
+      const res = await AUTH(endpoints?.login, formData)
+      if (res?.status) {
         console.log('Logged in successfully', res?.data);
         console.log('res?.data?.data', res?.data?.data);
         const formattedUser = {
-          token: res.data.token,
-          id: res.data.data.userId,
-          role: res.data.data.role,
-          name: res.data.data.fullName,
-          email: res.data.data.email,
-          designation: res.data.data.designation,
-          number: res.data.data.number,
+          token: res.token,
+          id: res.data.userId,
+          role: res.data.role,
+          name: res.data.fullName,
+          email: res.data.email,
+          designation: res.data.designation,
+          number: res.data.number,
         };
 
         dispatch(setDetails(formattedUser));
         dispatch(setSigin(true));
       } else {
-        console.log('Login failed', res?.data?.message);
+        console.log('Login failed', res?.message);
         ToastAndroid?.show(
-          `Login failed: ${res?.data?.message}`,
+          `Login failed: ${res?.message}`,
           ToastAndroid?.TOP,
         );
       }

@@ -50,7 +50,7 @@ const JoinAppointment = ({ navigation, route }: Props) => {
         backgroundColor={call ? 'transparent' : WHITE}
       />
       {call ? (
-        <Call navigation={navigation} setShow={setCall} />
+        <Call navigation={navigation} setShow={setCall} patientDetails={params}/>
       ) : success ? (
         <CustomModal
           show={success}

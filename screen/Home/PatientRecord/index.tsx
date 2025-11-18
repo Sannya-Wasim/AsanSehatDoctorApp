@@ -19,12 +19,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import RecordCard from './components/record';
 import { RootState } from '../../../store';
 import { useSelector } from 'react-redux';
+import { POST } from '../../../methods/apiClient';
+import { endpoints } from '../../../methods/endpoints';
 
 type HomeStack = DrawerScreenProps<DrawerParamList, 'Appointments'>;
 
 type Props = HomeStack;
 
-const PatientRecord = ({ navigation }: Props) => {
+const PatientRecord = ({ navigation, route }: Props) => {
+  const patientId = route?.params
   const user = useSelector((state : RootState) => state?.auth?.user)
   const [toggle, setToggle] = useState<'reports' | 'prescriptions'>(
     'prescriptions',
@@ -37,23 +40,14 @@ const PatientRecord = ({ navigation }: Props) => {
     setLoading(true);
     try {
       const formdata = new FormData();
-      formdata?.append('patientId', '112');
-      const res = await axios?.post(
-        `${config?.baseUrl}/doctors/patientFollowups`,
-        formdata,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `${user?.token}`,
-          },
-        },
-      );
+      formdata?.append('patientId', patientId);
+      const res = await POST(endpoints?.getFollowups, formdata)
       console.log('res', res);
-      if (res?.data?.status) {
-        console.log("Patient's record fetched successfully", res?.data?.data);
-        setRecords(res?.data?.data);
+      if (res?.status) {
+        console.log("Patient's record fetched successfully", res?.data);
+        setRecords(res?.data);
       } else {
-        console.log("Fetching patient's record failed", res?.data?.message);
+        console.log("Fetching patient's record failed", res?.message);
       }
     } catch (error) {
       console.log("Error fetching patient's record", error);
