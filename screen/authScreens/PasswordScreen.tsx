@@ -32,7 +32,7 @@ import { config } from '../../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
-import { POST } from '../../methods/apiClient';
+import { useApi } from '../../methods/apiClient';
 import { endpoints } from '../../methods/endpoints';
 type Props = NativeStackScreenProps<AuthStackType, 'PasswordScreen'>;
 
@@ -40,6 +40,7 @@ const PasswordScreen = ({ navigation }: Props) => {
   const user = useSelector((state : RootState) => state?.auth?.user)
   const password = usePasswordInputState('');
   const confirmPassword = usePasswordInputState('');
+  const {POST} = useApi()
   const [loading, setLoading] = useState(false);
   const dispatch = useAppDispatch();
   const setPassword = async () => {

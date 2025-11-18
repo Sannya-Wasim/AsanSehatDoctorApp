@@ -23,7 +23,7 @@ import { config } from '../../../../config';
 import { ScrollView } from 'react-native-gesture-handler';
 import { RootState } from '../../../../store';
 import { useSelector } from 'react-redux';
-import { POST } from '../../../../methods/apiClient';
+import { useApi } from '../../../../methods/apiClient';
 import { endpoints } from '../../../../methods/endpoints';
 
 type IFormInput = {
@@ -53,6 +53,7 @@ const Prescription = ({
   const user = useSelector((state : RootState) => state?.auth?.user)
   const [calendar, setCalendar] = useState(false);
   const [loading, setLoading] = useState(false);
+  const {POST} = useApi()
   const {
     control,
     handleSubmit,

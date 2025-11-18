@@ -19,7 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import RecordCard from './components/record';
 import { RootState } from '../../../store';
 import { useSelector } from 'react-redux';
-import { POST } from '../../../methods/apiClient';
+import { useApi } from '../../../methods/apiClient';
 import { endpoints } from '../../../methods/endpoints';
 
 type HomeStack = DrawerScreenProps<DrawerParamList, 'Appointments'>;
@@ -35,6 +35,7 @@ const PatientRecord = ({ navigation, route }: Props) => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [reports, setReports] = useState([]);
+  const {POST} = useApi()
 
   const fetchFollowups = async () => {
     setLoading(true);

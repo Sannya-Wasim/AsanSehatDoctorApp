@@ -30,7 +30,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
 import CustomModal from '../../components/modal';
-import { POST } from '../../methods/apiClient';
+import { useApi } from '../../methods/apiClient';
 import { endpoints } from '../../methods/endpoints';
 
 // type Props = NativeStackScreenProps<HomeStackScreenType, 'MainHomeScreen'> ;
@@ -47,6 +47,7 @@ const RescheduleAppointment = ({ navigation, route }: Props) => {
   const reson = useInputState();
   const [loading, setLoading] = useState(false);
   const [modal, showModal] = useState(false);
+  const {POST} = useApi()
   const months = [
     'January',
     'February',

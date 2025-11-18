@@ -19,7 +19,7 @@ import { config } from '../../config';
 import { DrawerScreenProps } from '@react-navigation/drawer';
 import { DrawerParamList } from '../../navigations/drawerNavigation';
 import CustomModal from '../../components/modal';
-import { POST } from '../../methods/apiClient';
+import { useApi } from '../../methods/apiClient';
 import { endpoints } from '../../methods/endpoints';
 
 type Props = DrawerScreenProps<DrawerParamList, 'EditProfile'>;
@@ -28,6 +28,7 @@ const UploadPicture = ({ navigation }: Props) => {
   const [response, setResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState(false);
+  const {POST} = useApi()
   const onButtonPress = useCallback(
     (
       type: String,

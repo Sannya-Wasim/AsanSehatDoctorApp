@@ -40,7 +40,7 @@ import axios from 'axios';
 import { config } from '../../config';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
-import { POST } from '../../methods/apiClient';
+import { useApi } from '../../methods/apiClient';
 import { endpoints } from '../../methods/endpoints';
 
 type Props = DrawerScreenProps<DrawerParamList, 'EditProfile'>;
@@ -60,6 +60,7 @@ type FormValues = {
 const EditProfile = ({ navigation }: any) => {
   const [loading, setLoading] = useState(false);
   const user = useSelector((state: RootState) => state?.auth?.user);
+  const {POST} = useApi()
   const {
     control,
     handleSubmit,
