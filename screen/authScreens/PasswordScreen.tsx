@@ -34,33 +34,36 @@ import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
 import { useApi } from '../../methods/apiClient';
 import { endpoints } from '../../methods/endpoints';
+import { ScrollView } from 'react-native-gesture-handler';
 type Props = NativeStackScreenProps<AuthStackType, 'PasswordScreen'>;
 
 const PasswordScreen = ({ navigation }: Props) => {
-  const user = useSelector((state : RootState) => state?.auth?.user)
+  const user = useSelector((state: RootState) => state?.auth?.user);
   const password = usePasswordInputState('');
   const confirmPassword = usePasswordInputState('');
-  const {POST} = useApi()
+  const { POST } = useApi();
   const [loading, setLoading] = useState(false);
   const dispatch = useAppDispatch();
   const setPassword = async () => {
     setLoading(true);
     try {
-        if (password?.value === '' && confirmPassword?.value === ''){
-            ToastAndroid.show('Passwords should not be empty', ToastAndroid?.BOTTOM)
-        }
-      else if  (password?.value === confirmPassword?.value) {
+      if (password?.value === '' && confirmPassword?.value === '') {
+        ToastAndroid.show(
+          'Passwords should not be empty',
+          ToastAndroid?.BOTTOM,
+        );
+      } else if (password?.value === confirmPassword?.value) {
         const formData = new FormData();
         formData?.append('userId', user?.id);
         formData?.append('password', password?.value);
-        const res = await POST(endpoints?.setPassword, formData)
+        const res = await POST(endpoints?.setPassword, formData);
         if (res?.status) {
           console.log('Password updated successfully', res);
-          navigation?.navigate('EditProfile')
+          navigation?.navigate('EditProfile', {auth : true});
         } else {
           console.log('Password updation failed', res?.message);
         }
-        navigation?.navigate('EditProfile')
+        // navigation?.navigate('EditProfile');
       } else {
         ToastAndroid.show("Passwords don't match", ToastAndroid.SHORT);
       }
@@ -72,59 +75,70 @@ const PasswordScreen = ({ navigation }: Props) => {
   };
 
   return (
-    <SafeAreaView style={styles.mainContainer}>
-      <KeyboardAvoidingView
-        behavior={Platform?.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1, justifyContent: 'center' }}
-      >
-        <View style={styles.skipButtonContainer}>
-          {/* <Pressable style={styles.skipButton}><Text style={styles.skipButtonText}>SKIP</Text></Pressable> */}
-        </View>
-        <View style={styles.container}>
-          <Image
-            source={require('../../assets/png/logoBlack.png')}
-            style={styles.logo}
-            resizeMode="stretch"
-          />
+<SafeAreaView style={styles.mainContainer}>
+  <KeyboardAvoidingView
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    style={{
+      flex: 1,
+      padding : 20
+    }}
+  >
+    <ScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+      keyboardShouldPersistTaps="handled"
+    >
+      <View style={[styles.container, { width: '100%' }]}>
+        <Image
+          source={require('../../assets/png/logoBlack.png')}
+          style={styles.logo}
+          resizeMode="stretch"
+        />
 
-          <Text style={styles.mainText}>Set Password</Text>
-          <Text style={styles.text}>
-            Almost there. Please set a password for your account to continue.
-          </Text>
-          <PasswordInput
-            inputState={password}
-            label={'Password'}
-            placeholder="Enter Password Here"
-          />
-          <PasswordInput
-            inputState={confirmPassword}
-            label={'Confirm Password'}
-            placeholder="Enter Password Here"
-          />
+        <Text style={styles.mainText}>Set Password</Text>
+        <Text style={styles.text}>
+          Almost there. Please set a password for your account to continue.
+        </Text>
 
-          <Pressable
-            style={[GlobalStyle.filedButton, { marginTop: scale(40) }]}
-            onPress={setPassword}
-          >
-            {loading ? (
-              <ActivityIndicator size={'small'} color={WHITE}/>
-            ) : (
-              <Text style={GlobalStyle.filedButtonText}>
-                Create New Password
-              </Text>
-            )}
-          </Pressable>
-        </View>
-        <View style={styles.footer}>
-          <Text style={{ fontSize: scale(11) }}>
-            Supported by Hands Pakistan
-          </Text>
-          <Text style={{ fontSize: scale(11) }}>
-            Copyright Asaan Sehat. All Rights Reserved.
-          </Text>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        <PasswordInput
+          inputState={password}
+          label={'Password'}
+          placeholder="Enter Password Here"
+        />
+
+        <PasswordInput
+          inputState={confirmPassword}
+          label={'Confirm Password'}
+          placeholder="Enter Password Here"
+        />
+
+        <Pressable
+          style={[GlobalStyle.filedButton, { marginTop: scale(40) }]}
+          onPress={setPassword}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color={WHITE} />
+          ) : (
+            <Text style={GlobalStyle.filedButtonText}>
+              Create New Password
+            </Text>
+          )}
+        </Pressable>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={{ fontSize: scale(11) }}>Supported by Hands Pakistan</Text>
+        <Text style={{ fontSize: scale(11) }}>
+          Copyright Asaan Sehat. All Rights Reserved.
+        </Text>
+      </View>
+    </ScrollView>
+  </KeyboardAvoidingView>
+</SafeAreaView>
+
   );
 };
 
@@ -134,15 +148,12 @@ const styles = ScaledSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: '#fff',
-    justifyContent: 'space-between',
   },
   container: {
     width: '90%',
     backgroundColor: WHITE,
-    alignContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
-    flexGrow: 1,
   },
   footer: {
     alignSelf: 'center',

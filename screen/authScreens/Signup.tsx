@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  ToastAndroid,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScaledSheet, scale } from 'react-native-size-matters';
@@ -46,7 +47,7 @@ const SignupScreen = ({ navigation }: Props) => {
   const { AUTH } = useApi();
   const [loading, setLoading] = useState(false);
 
-  const press = () => navigation?.navigate('OTPScreen');
+  const press = () => navigation?.navigate('PasswordScreen');
 
   const signup = async () => {
     setLoading(true);
@@ -70,12 +71,15 @@ const SignupScreen = ({ navigation }: Props) => {
         };
 
         dispatch(setDetails(formattedUser));
+        ToastAndroid.show('Signup successful', ToastAndroid.BOTTOM);
         press();
       } else {
         console.log('Signup failed', res?.message);
+        ToastAndroid.show(`Signup failed ${res?.message}`, ToastAndroid.BOTTOM);
       }
     } catch (error) {
       console.log('Error signing up', error);
+      ToastAndroid.show('Signup failed', ToastAndroid.BOTTOM);
     } finally {
       setLoading(false);
     }
@@ -148,7 +152,11 @@ const SignupScreen = ({ navigation }: Props) => {
               />
             </View>
             <Pressable style={GlobalStyle.filedButton} onPress={signup}>
-              <Text style={GlobalStyle.filedButtonText}>Register</Text>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={WHITE} />
+              ) : (
+                <Text style={GlobalStyle.filedButtonText}>Register</Text>
+              )}
             </Pressable>
           </ScrollView>
           <View
@@ -163,20 +171,16 @@ const SignupScreen = ({ navigation }: Props) => {
               Already have an account?
             </Text>
             <Pressable onPress={() => navigation?.navigate('Login')}>
-              {loading ? (
-                <ActivityIndicator size={'small'} color={WHITE} />
-              ) : (
-                <Text
-                  style={{
-                    marginLeft: scale(5),
-                    fontSize: scale(10),
-                    color: BLUE,
-                    fontWeight: 'bold',
-                  }}
-                >
-                  Sign In
-                </Text>
-              )}
+              <Text
+                style={{
+                  marginLeft: scale(5),
+                  fontSize: scale(10),
+                  color: BLUE,
+                  fontWeight: 'bold',
+                }}
+              >
+                Sign In
+              </Text>
             </Pressable>
           </View>
         </View>

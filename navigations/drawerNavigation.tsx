@@ -12,11 +12,11 @@ import DonateNowScreen from '../screen/ComonScreens/DonateNowScreen';
 import SelectPaymentMethod from '../screen/ComonScreens/selectPaymentMethod';
 import PaymentConfirmation from '../screen/ComonScreens/paymentConfirmation';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, View, Image } from 'react-native';
+import { Text, View, Image, Share } from 'react-native';
 
 import { scale } from 'react-native-size-matters';
 import { BLACK, RED_COLOR } from '../util/color';
-import { setSigin } from '../store/reducer/authReducer';
+import { setDetails, setSigin } from '../store/reducer/authReducer';
 import { useAppDispatch } from '../store/hook';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Icon from 'react-native-vector-icons/Feather';
@@ -112,7 +112,7 @@ export default function DrawerNavigation() {
     },
     {
       lable: 'Wallet',
-      icon:<Icon name="credit-card" size={20} color={BLACK}/>,
+      icon: <Icon name="credit-card" size={20} color={BLACK} />,
       navigate: 'Wallet',
     },
     {
@@ -122,15 +122,31 @@ export default function DrawerNavigation() {
     },
     {
       lable: 'Donate Now',
-      icon: <Icon name="heart" size={20} color={BLACK}/>,
+      icon: <Icon name="heart" size={20} color={BLACK} />,
       navigate: 'DonateNowScreen',
     },
     {
       lable: 'Invite a friend',
-      icon:<Icon name="user-plus" size={20} color={BLACK} />,
+      icon: <Icon name="user-plus" size={20} color={BLACK} />,
       navigate: null,
     },
   ];
+
+  const onInviteFriend = async () => {
+    try {
+      const result = await Share.share(
+        {
+          message:
+            'Check out this amazing app! Download now: https://dummy-url.com',
+        },
+        {
+          dialogTitle: 'Share via',
+        },
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const fetchDoctorDetails = async () => {
     try {
@@ -187,11 +203,16 @@ export default function DrawerNavigation() {
                 icon={props => d.icon}
                 label={d.lable}
                 labelStyle={{ color: BLACK }}
-                onPress={() =>
-                  d.navigate ? props.navigation.navigate(d.navigate) : null
-                }
+                onPress={() => {
+                  if (d.navigate) {
+                    props.navigation.navigate(d.navigate);
+                  } else if (d.lable === 'Invite a friend') {
+                    onInviteFriend();
+                  }
+                }}
               />
             ))}
+
             <View
               style={{
                 borderBottomColor: BLACK,
@@ -224,7 +245,23 @@ export default function DrawerNavigation() {
               icon={props => <Icon name="log-out" size={20} color={BLACK} />}
               label={'Log Out'}
               labelStyle={{ color: BLACK }}
-              onPress={() => dispatch(setSigin(false))}
+              onPress={() => {
+                console.log('..........Logging out..........');
+
+                dispatch(setSigin(false));
+                dispatch(
+                  setDetails({
+                    token: '',
+                    id: '',
+                    role: '',
+                    name: '',
+                    email: '',
+                    designation: '',
+                    number: '',
+                  }),
+                );
+                props.navigation.navigate('Auth', { screen: 'Login' });
+              }}
             />
           </DrawerContentScrollView>
         </SafeAreaView>

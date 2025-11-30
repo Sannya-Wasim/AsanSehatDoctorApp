@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -58,10 +58,12 @@ type FormValues = {
 };
 
 const EditProfile = ({ navigation, route }: any) => {
-  const {auth} = route?.params?.auth
+  const { auth } = route?.params;
+  console.log('auth', auth);
   const [loading, setLoading] = useState(false);
   const user = useSelector((state: RootState) => state?.auth?.user);
-  const {POST} = useApi()
+  const { POST } = useApi();
+  const [doctor, setDoctor] = useState({});
   const {
     control,
     handleSubmit,
@@ -69,6 +71,7 @@ const EditProfile = ({ navigation, route }: any) => {
     getValues,
     watch,
     formState: { errors },
+    reset,
   } = useForm<FormValues>({
     defaultValues: {
       name: '',
@@ -81,6 +84,48 @@ const EditProfile = ({ navigation, route }: any) => {
       degrees: [{ degree: '', image: null }],
     },
   });
+  const fetchDoctorDetails = async () => {
+    setLoading(true);
+    try {
+      const formdata = new FormData();
+      formdata.append('id', user?.id);
+
+      const res = await POST(endpoints?.fetchDetails, formdata);
+
+      if (res?.status) {
+        console.log("Successfully fetched doctor's details", res?.data);
+        setDoctor(res?.data);
+
+        if (!auth) {
+          reset({
+            name: res?.data?.name || '',
+            email: res?.data?.email || '',
+            age: res?.data?.age || '',
+            experience: res?.data?.experience || '',
+            fee: res?.data?.fee || '',
+            about: res?.data?.about || '',
+            specialties: res?.data?.specialties || '',
+            degrees: res?.data?.degrees?.length
+              ? res?.data?.degrees.map(d => ({
+                  degree: d.degreeName || '',
+                  image: null,
+                }))
+              : [{ degree: '', image: null }],
+          });
+        }
+      } else {
+        console.log("Failed to fetch doctor's details", res?.message);
+      }
+    } catch (error) {
+      console.log("Error fetching doctor's details", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDoctorDetails();
+  }, []);
 
   const { fields, append, remove, update } = useFieldArray({
     control,
@@ -184,21 +229,31 @@ const EditProfile = ({ navigation, route }: any) => {
       formdata?.append('id', user?.id);
       const selectedTimes = time.filter(t => t.isSelected).map(t => t.name);
       days.forEach(d => {
-        formdata?.append(d?.value, d?.isSelected ? JSON?.stringify(selectedTimes) : 'off')
+        formdata?.append(
+          d?.value,
+          d?.isSelected ? JSON?.stringify(selectedTimes) : 'off',
+        );
       });
-      console.log("formdata", formdata)
-      const res = await POST(endpoints?.clinicTimings, formdata)
-      if (res?.status){
-        console.log('Clinic times updated successfully', res?.data)
-        auth ? navigation.navigate('UploadPicture') : navigation.goBack()
+      console.log('formdata', formdata);
+      const res = await POST(endpoints?.clinicTimings, formdata);
+      if (res?.status) {
+        console.log('Clinic times updated successfully', res?.data);
+        auth
+          ? navigation.navigate('Auth', {
+              screen: 'UploadPicture',
+            })
+          : navigation.goBack();
       } else {
-        console.log("Failed to update clinic times", res?.message)
-        ToastAndroid?.show(`Failed to update clinic times: ${res?.message}`, ToastAndroid?.TOP)
+        console.log('Failed to update clinic times', res?.message);
+        ToastAndroid?.show(
+          `Failed to update clinic times: ${res?.message}`,
+          ToastAndroid?.TOP,
+        );
       }
     } catch (error) {
       console.log('Error updating times', error);
-      ToastAndroid?.show(`Error updating times: ${error}`, ToastAndroid?.TOP)
-    } 
+      ToastAndroid?.show(`Error updating times: ${error}`, ToastAndroid?.TOP);
+    }
   };
 
   const editProfile = async (data: FormValues) => {
@@ -207,17 +262,20 @@ const EditProfile = ({ navigation, route }: any) => {
       console.log('data', data);
       const formData = fillProfile({ ...data, userId: user?.id });
       console.log('Form data', formData);
-      const res = await POST(endpoints?.editProfile, formData)
+      const res = await POST(endpoints?.editProfile, formData);
       if (res?.status) {
         console.log('Profile updated successfully', res);
-        await updateTimes()
+        await updateTimes();
       } else {
         console.log('Profile update failed', res?.message);
-        ToastAndroid?.show(`Failed to update profile: ${res?.message}`, ToastAndroid?.TOP)
+        ToastAndroid?.show(
+          `Failed to update profile: ${res?.message}`,
+          ToastAndroid?.TOP,
+        );
       }
     } catch (error) {
       console.log('Error updating profile', error);
-      ToastAndroid?.show(`Error updating profile: ${error}`, ToastAndroid?.TOP)
+      ToastAndroid?.show(`Error updating profile: ${error}`, ToastAndroid?.TOP);
     } finally {
       setLoading(false);
     }
@@ -250,6 +308,7 @@ const EditProfile = ({ navigation, route }: any) => {
         <View style={styles.container}>
           <ScrollView
             style={{ width: '100%', alignSelf: 'center', marginTop: scale(5) }}
+            contentContainerStyle={{ paddingBottom: scale(40) }}
           >
             <Text style={{ fontSize: scale(16), color: BLACK }}>
               Personal Information
@@ -544,7 +603,8 @@ const EditProfile = ({ navigation, route }: any) => {
             <Pressable
               style={[
                 GlobalStyle.filedButton,
-                { position: 'absolute', bottom: scale(20) },
+{                marginTop : scale(20)}
+                // { position: 'absolute', bottom: scale(20) },
               ]}
               onPress={handleSubmit(editProfile)}
               // onPress={fillSlots}

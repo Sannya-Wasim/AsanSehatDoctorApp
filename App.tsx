@@ -12,6 +12,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BLACK } from './util/color';
 import DrawerNavigation from './navigations/drawerNavigation';
 import RootNavigator from './navigations/rootNavigation';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 interface TextWithDefaultProps extends Text {
   defaultProps?: { allowFontScaling?: boolean, color?: string };
@@ -49,6 +50,8 @@ const AppUI = () => {
 
 function App() {
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+
     <SafeAreaProvider style={{marginTop:Platform.OS === 'ios' ?50:0}}>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
@@ -56,6 +59,8 @@ function App() {
         </PersistGate>
       </Provider>
     </SafeAreaProvider>
+    </GestureHandlerRootView>
+
   );
 }
 
