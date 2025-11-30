@@ -23,7 +23,7 @@ const DetailCard = () => {
       formdata.append('id', user?.id);
       const res = await POST(endpoints?.fetchDetails, formdata);
       if (res?.status) {
-        // console.log("Successfully fetched doctor's details", res?.data);
+        console.log("Successfully fetched doctor's details", res?.data);
         setDoctor(res?.data);
       } else {
         console.log("Failed to fetch doctor's details", res?.message);
@@ -48,7 +48,7 @@ const DetailCard = () => {
           <View style={styles.card}>
             <View style={styles.cardLeft}>
               <Text style={styles.doctorName}>{doctor?.name}</Text>
-              <Text style={styles.doctorDesignation}>{user?.designation}</Text>
+              <Text style={styles.doctorDesignation}>{doctor?.designation}</Text>
               <View style={styles.degreeContainer}>
                 {doctor?.degrees?.map((deg: { degreeName: string }, index) => (
                   <Text key={index} style={styles.degreeText}>

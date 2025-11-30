@@ -13,7 +13,6 @@ export type AuthStackType = {
     OTPScreen:undefined,
     RegisterScreen:undefined,
     PasswordScreen:undefined,
-    EditProfile : undefined,
     UploadPicture : undefined
 };
 
@@ -27,7 +26,6 @@ export default function AuthScreenNavigator() {
             <Stack.Screen name="Signup" component={SignupScreen} options={{ headerShown: false }} />
             <Stack.Screen name="OTPScreen" component={OTPScreen} options={{ headerShown: false }} />
             <Stack.Screen name="PasswordScreen" component={PasswordScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="EditProfile" component={EditProfile} options={{ headerShown: false }} />
             <Stack.Screen name="UploadPicture" component={UploadPicture} options={{ headerShown: false }} />
         </Stack.Navigator>
     )

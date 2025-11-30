@@ -9,6 +9,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScaledSheet, scale } from 'react-native-size-matters';
@@ -33,7 +34,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch } from 'react-redux';
 import { setDetails } from '../../store/reducer/authReducer';
-import { AUTH } from '../../methods/apiClient';
+import { useApi } from '../../methods/apiClient';
 import { endpoints } from '../../methods/endpoints';
 
 type Props = NativeStackScreenProps<AuthStackType, 'Signup'>;
@@ -42,17 +43,20 @@ const SignupScreen = ({ navigation }: Props) => {
   const name = useInputState('');
   const contact = useInputState('');
   const dispatch = useDispatch();
+  const { AUTH } = useApi();
+  const [loading, setLoading] = useState(false);
 
   const press = () => navigation?.navigate('OTPScreen');
 
   const signup = async () => {
+    setLoading(true);
     try {
       const formData = new FormData();
       formData?.append('name', name?.value);
       formData?.append('number', contact?.value);
       console.log('signup request obj', formData);
-      const res = await AUTH(endpoints?.signup, formData)
-      console.log("response", res?.data?.data)
+      const res = await AUTH(endpoints?.signup, formData);
+      console.log('response', res?.data?.data);
       if (res?.status) {
         console.log('signup successfull', res?.data);
         const formattedUser = {
@@ -72,6 +76,8 @@ const SignupScreen = ({ navigation }: Props) => {
       }
     } catch (error) {
       console.log('Error signing up', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -157,16 +163,20 @@ const SignupScreen = ({ navigation }: Props) => {
               Already have an account?
             </Text>
             <Pressable onPress={() => navigation?.navigate('Login')}>
-              <Text
-                style={{
-                  marginLeft: scale(5),
-                  fontSize: scale(10),
-                  color: BLUE,
-                  fontWeight: 'bold',
-                }}
-              >
-                Sign In
-              </Text>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={WHITE} />
+              ) : (
+                <Text
+                  style={{
+                    marginLeft: scale(5),
+                    fontSize: scale(10),
+                    color: BLUE,
+                    fontWeight: 'bold',
+                  }}
+                >
+                  Sign In
+                </Text>
+              )}
             </Pressable>
           </View>
         </View>

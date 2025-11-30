@@ -70,7 +70,7 @@ export function AllHeader({ navigate, back, title }: PropsComonHeader) {
         position: 'absolute',
         top: 0,
         paddingVertical: 10,
-        paddingHorizontal: 30,
+        paddingRight: 20,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -78,7 +78,11 @@ export function AllHeader({ navigate, back, title }: PropsComonHeader) {
     >
       <Pressable
         onPress={() => back()}
-        style={{ paddingVertical: 10, paddingHorizontal: 20 }}
+        style={{
+          paddingVertical: 10,
+          paddingHorizontal: 25,
+          alignItems: 'flex-start',
+        }}
       >
         <Icon name="arrow-left" size={scale(15)} color={BLACK} />
       </Pressable>
@@ -101,7 +105,7 @@ export function AllHeader({ navigate, back, title }: PropsComonHeader) {
         ]}
       >
         <Icon name="phone-call" size={scale(15)} color={WHITE} />
-        <Text style={[GlobalStyle.filedButtonText, { marginLeft: scale(4), }]}>
+        <Text style={[GlobalStyle.filedButtonText, { marginLeft: scale(4) }]}>
           Help
         </Text>
       </Pressable>

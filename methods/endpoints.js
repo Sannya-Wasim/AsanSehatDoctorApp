@@ -9,5 +9,6 @@ export const endpoints = {
   getAppointments: '/doctors/doctorAppointments',
   rescheduleAppointment : "/doctors/rescheduleAppointment",
   addFollowup : "/doctors/addFollowup",
-  getFollowups : "/doctors/patientFollowups"
+  getFollowups : "/doctors/patientFollowups",
+  getDoctorReviews : "/doctors/doctorReviews"
 };

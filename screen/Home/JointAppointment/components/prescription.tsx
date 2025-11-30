@@ -3,6 +3,7 @@ import {
   Pressable,
   Text,
   TextInput,
+  ToastAndroid,
   View,
 } from 'react-native';
 import { prescriptionStyles as styles } from '../styles';
@@ -137,6 +138,7 @@ const Prescription = ({
       }
     } catch (error) {
       console.log('Error adding prescription', error);
+      ToastAndroid.show(`Error adding prescription: ${error}`, ToastAndroid.BOTTOM)
     } finally {
       setLoading(false);
     }
@@ -209,6 +211,7 @@ const Prescription = ({
                   justifyContent: 'space-between',
                   marginVertical: scale(10),
                 }}
+                key={item.id}
               >
                 <View
                   style={{
@@ -321,7 +324,7 @@ const Prescription = ({
             }
           >
             <FAIcon name="plus-circle" size={20} color={BLACK} />
-            <Text style={{ marginLeft: scale(10) }}>Add another degree</Text>
+            <Text style={{ marginLeft: scale(10) }}>Add another prescription</Text>
           </Pressable>
 
           {/* Instructions */}

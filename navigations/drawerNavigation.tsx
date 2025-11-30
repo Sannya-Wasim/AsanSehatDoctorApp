@@ -18,15 +18,19 @@ import { scale } from 'react-native-size-matters';
 import { BLACK, RED_COLOR } from '../util/color';
 import { setSigin } from '../store/reducer/authReducer';
 import { useAppDispatch } from '../store/hook';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Icon from 'react-native-vector-icons/Feather';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome6';
-import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import RescheduleAppointment from '../screen/Home/RescheduleAppointment';
 import Appointments from '../screen/Home/Appointments';
 import Profile from '../screen/Home/Profile';
 import EditProfile from '../screen/authScreens/EditProfile';
 import JoinAppointment from '../screen/Home/JointAppointment';
 import PatientRecord from '../screen/Home/PatientRecord';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
+import { useEffect, useState } from 'react';
+import { useApi } from '../methods/apiClient';
+import { endpoints } from '../methods/endpoints';
 
 export type DrawerParamList = {
   Home: undefined;
@@ -82,7 +86,7 @@ export type DrawerParamList = {
     review: null | string;
     showButton: boolean;
   };
-  PatientRecord : undefined;
+  PatientRecord: undefined;
   Appointments: undefined;
   Profile: undefined;
   EditProfile: undefined;
@@ -91,7 +95,10 @@ export type DrawerParamList = {
 // create Drawer Navigation
 const Drawer = createDrawerNavigator<DrawerParamList>();
 export default function DrawerNavigation() {
+  const [doctor, setDoctor] = useState({});
   const dispatch = useAppDispatch();
+  const user = useSelector((state: RootState) => state?.auth?.user);
+  const { POST } = useApi();
   const drawerItems = [
     {
       lable: 'My Profile',
@@ -103,28 +110,47 @@ export default function DrawerNavigation() {
       icon: <Icon name="calendar" size={20} color={BLACK} />,
       navigate: 'Appointments',
     },
-
     {
       lable: 'Wallet',
-      icon: <FontAwesomeIcon name="wallet" size={20} color={BLACK} />,
+      icon:<Icon name="credit-card" size={20} color={BLACK}/>,
       navigate: 'Wallet',
     },
     {
       lable: 'Contact Us',
-      icon: <FontAwesomeIcon name="phone" size={20} color={BLACK} />,
+      icon: <Icon name="phone" size={20} color={BLACK} />,
       navigate: 'Help',
     },
     {
       lable: 'Donate Now',
-      icon: <FontAwesome5Icon name="donate" size={20} color={BLACK} />,
+      icon: <Icon name="heart" size={20} color={BLACK}/>,
       navigate: 'DonateNowScreen',
     },
     {
       lable: 'Invite a friend',
-      icon: <FontAwesomeIcon name="comment-medical" size={20} color={BLACK} />,
+      icon:<Icon name="user-plus" size={20} color={BLACK} />,
       navigate: null,
     },
   ];
+
+  const fetchDoctorDetails = async () => {
+    try {
+      const formdata = new FormData();
+      formdata.append('id', user?.id);
+      const res = await POST(endpoints?.fetchDetails, formdata);
+      if (res?.status) {
+        console.log("Successfully fetched doctor's details", res?.data);
+        setDoctor(res?.data);
+      } else {
+        console.log("Failed to fetch doctor's details", res?.message);
+      }
+    } catch (error) {
+      console.log("Error fetching doctor's details", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDoctorDetails();
+  }, []);
   return (
     <Drawer.Navigator
       drawerContent={props => (
@@ -133,7 +159,7 @@ export default function DrawerNavigation() {
             style={{ width: '90%', alignSelf: 'center', marginTop: scale(20) }}
           >
             <Image
-              source={require('../assets/png/doctorImage.png')}
+              source={{ uri: doctor.profile_picture }}
               style={{
                 width: scale(120),
                 height: scale(120),
@@ -150,9 +176,9 @@ export default function DrawerNavigation() {
                 fontWeight: 'bold',
               }}
             >
-              Dr. Nadeem Ahmed
+              {doctor.name}
             </Text>
-            <Text style={{ color: BLACK }}>General Physician</Text>
+            <Text style={{ color: BLACK }}>{doctor?.designation}</Text>
           </View>
           <DrawerContentScrollView {...props}>
             <DrawerItemList {...props} />

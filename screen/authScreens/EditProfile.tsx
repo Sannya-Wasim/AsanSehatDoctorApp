@@ -57,7 +57,8 @@ type FormValues = {
   userId?: string | undefined;
 };
 
-const EditProfile = ({ navigation }: any) => {
+const EditProfile = ({ navigation, route }: any) => {
+  const {auth} = route?.params?.auth
   const [loading, setLoading] = useState(false);
   const user = useSelector((state: RootState) => state?.auth?.user);
   const {POST} = useApi()
@@ -189,7 +190,7 @@ const EditProfile = ({ navigation }: any) => {
       const res = await POST(endpoints?.clinicTimings, formdata)
       if (res?.status){
         console.log('Clinic times updated successfully', res?.data)
-        navigation?.navigate('UploadPicture');
+        auth ? navigation.navigate('UploadPicture') : navigation.goBack()
       } else {
         console.log("Failed to update clinic times", res?.message)
         ToastAndroid?.show(`Failed to update clinic times: ${res?.message}`, ToastAndroid?.TOP)

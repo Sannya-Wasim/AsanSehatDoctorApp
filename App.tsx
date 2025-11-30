@@ -11,6 +11,7 @@ import AuthScreenNavigator from './navigations/authNavigation';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BLACK } from './util/color';
 import DrawerNavigation from './navigations/drawerNavigation';
+import RootNavigator from './navigations/rootNavigation';
 
 interface TextWithDefaultProps extends Text {
   defaultProps?: { allowFontScaling?: boolean, color?: string };
@@ -43,15 +44,7 @@ const AppUI = () => {
     // )
   }, [])
   console.log("splash Screen", splashShown)
-  return (
-    <NavigationContainer>
-      {
-        splashShown ? <SplashScreenNavigator /> :
-          !auth.isSingin ?
-            <AuthScreenNavigator /> : <DrawerNavigation />
-      }
-    </NavigationContainer>
-  )
+  return <RootNavigator splashShown={splashShown} />;
 }
 
 function App() {
