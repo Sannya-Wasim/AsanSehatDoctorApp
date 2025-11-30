@@ -184,7 +184,6 @@ export default function DrawerNavigation() {
             <DrawerItemList {...props} />
             {drawerItems.map(d => (
               <DrawerItem
-                style={{ height: scale(45) }}
                 icon={props => d.icon}
                 label={d.lable}
                 labelStyle={{ color: BLACK }}
@@ -202,7 +201,6 @@ export default function DrawerNavigation() {
               }}
             />
             <DrawerItem
-              style={{ height: scale(45) }}
               icon={props => <Icon name="file-text" size={20} color={BLACK} />}
               label={'Privacy Policy'}
               labelStyle={{ color: BLACK }}
@@ -217,14 +215,12 @@ export default function DrawerNavigation() {
               }}
             />
             <DrawerItem
-              style={{ height: scale(45) }}
               icon={props => <Icon name="trash" size={20} color={RED_COLOR} />}
               label={'Delete Account'}
               labelStyle={{ color: RED_COLOR }}
               onPress={() => dispatch(setSigin(false))}
             />
             <DrawerItem
-              style={{ height: scale(45) }}
               icon={props => <Icon name="log-out" size={20} color={BLACK} />}
               label={'Log Out'}
               labelStyle={{ color: BLACK }}
