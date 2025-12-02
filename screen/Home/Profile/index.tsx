@@ -14,7 +14,7 @@ import { ScaledSheet, scale } from 'react-native-size-matters';
 import { AllHeader } from '../../../components/header';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { DrawerScreenProps } from '@react-navigation/drawer';
-import { DrawerActions } from '@react-navigation/native';
+import { DrawerActions, useFocusEffect } from '@react-navigation/native';
 import { Input, useInputState } from '../../../components/inputs/textInput';
 import { BLACK, RED_COLOR, WHITE, WHITE_10 } from '../../../util/color';
 import Icon from 'react-native-vector-icons/Feather';
@@ -128,10 +128,14 @@ const Profile = ({ navigation }: StackProps) => {
     }
   };
 
-  useEffect(() => {
-    fetchDoctorDetails();
+  useFocusEffect(
+    useCallback(()=>{
+      fetchDoctorDetails();
     fetchReviews();
-  }, []);
+    },[])
+  );
+
+
   const Header = () => (
     <View>
       <StatusBar backgroundColor={RED_COLOR} />

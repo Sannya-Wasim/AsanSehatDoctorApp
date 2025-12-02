@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, Image, Dimensions, ActivityIndicator } from 'react-native';
 import { scale, ScaledSheet } from 'react-native-size-matters';
 import Icon from 'react-native-vector-icons/Feather';
@@ -9,6 +9,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import Icons from './Icons';
+import { useFocusEffect } from '@react-navigation/native';
 
 const DetailCard = () => {
   const [loading, setLoading] = useState(false);
@@ -35,9 +36,11 @@ const DetailCard = () => {
     }
   };
 
-  useEffect(() => {
-    fetchDoctorDetails();
-  }, []);
+  useFocusEffect(
+    useCallback(()=>{
+      fetchDoctorDetails();
+    },[])
+  )
 
   return (
     <View style={styles.container}>

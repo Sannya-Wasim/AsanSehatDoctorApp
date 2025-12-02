@@ -101,8 +101,8 @@ const EditProfile = ({ navigation, route }: any) => {
             name: res?.data?.name || '',
             email: res?.data?.email || '',
             age: res?.data?.age || '',
-            experience: res?.data?.experience || '',
-            fee: res?.data?.fee || '',
+            experience: res?.data?.workExperience || '',
+            fee: res?.data?.fees || '',
             about: res?.data?.about || '',
             specialties: res?.data?.specialties || '',
             degrees: res?.data?.degrees?.length
